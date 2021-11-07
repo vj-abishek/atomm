@@ -7,28 +7,28 @@ import theme from '../theme/theme';
 
 const Stack = createNativeStackNavigator();
 
-
 export default function HomeScreenStack() {
     return (
         <>
-        <StatusBar
-          translucent
-          backgroundColor="transparent"
-          barStyle="light-content"
-          />
-        <Stack.Navigator>
-                <Stack.Screen  options={{
+            <StatusBar
+                translucent
+                backgroundColor="transparent"
+                barStyle="light-content"
+            />
+            <Stack.Navigator>
+                <Stack.Screen options={{
                     headerShown: false,
+                    headerTransparent: true
                 }}
-                 name="MainHome" component={HomeScreen} />
-             <Stack.Screen  options={({ route }) => ({
-                  title: route.params.title,
-                  headerStyle: {
-                    backgroundColor: theme.sy,
+                    name="MainHome" component={HomeScreen} />
+                <Stack.Screen options={({ route }) => ({
+                    title: route.params.title,
+                    headerStyle: {
+                        backgroundColor: theme.sy,
                     },
                     headerTintColor: theme.txt
-             })} name="Album" component={AlbumScreen} />
-        </Stack.Navigator>
+                })} name="HomeAlbum" component={AlbumScreen} />
+            </Stack.Navigator>
         </>
     )
 }

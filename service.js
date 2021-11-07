@@ -22,13 +22,7 @@ module.exports = async function setup() {
   });
 
   TrackPlayer.addEventListener(Event.RemotePrevious, async () => {
-    const position = await TrackPlayer.getPosition();
-
-      if (position > 3) {
-        TrackPlayer.seekTo(0);
-      } else {
-        Previous()
-      }
+    Previous()
   });
 
   TrackPlayer.addEventListener(Event.RemoteDuck, async e => {

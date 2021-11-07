@@ -20,9 +20,11 @@ export default function Header({obj, title}) {
                         <Text key={`FroM_album_Main_subtitle_T${i}`}>{st.text}</Text>
                     ))}
             </Text>
-            <TouchableOpacity  onPress={() => console.log('pressed')} style={styles.playAll}>
+            {/* <TouchableOpacity  onPress={() => dispatch(setRandomId({
+                randomId: Date.now()
+            }))} style={styles.playAll}>
                     <Text style={styles.appButtonText}>Play Now</Text>
-            </TouchableOpacity >
+            </TouchableOpacity > */}
        </View>
     )
 }

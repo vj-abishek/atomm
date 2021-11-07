@@ -1,30 +1,37 @@
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
-import { View, Text, StyleSheet, ActivityIndicator, FlatList, TouchableOpacity } from 'react-native'
+import { View,  StyleSheet, ActivityIndicator, FlatList } from 'react-native'
 import AlbumList from '../components/Album/AlbumList';
 import Header from '../components/Album/Header';
 import theme from '../theme/theme'
+import { REACT_APP_API_URL } from '../../globals'
 
-const url = 'https://beatbump.ml/api/api.json'
+const url = `${REACT_APP_API_URL}api/`
 
 export default function AlbumScreen({ route }) {
     const { obj, title } = route.params
     const [albumList, setAlbumList] = useState(null)
 
     const getAlbumData =async (token) => {
+        const data = obj?.type === 'playlist' ? `path=playlist&endpoint=browse&type=playlist&browseId=${obj.browseId}&playlistId=${obj.browseId}` : `path=browse&endpoint=browse&browseId=${obj.browseId}&type=release`
+
         try {
             const result = await axios({
-                url,
+                url: `${url}api.json`,
                 method: 'POST',
                 headers: {
                     "content-type": "application/x-www-form-urlencoded",
                 },
-                data: `path=browse&endpoint=browse&browseId=${obj.browseId}&type=release`,
+                data,
                 cancelToken: token
             })
 
             if(result.status === 200) {
-                setAlbumList(result.data.contents.singleColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.sectionListRenderer.contents[0].musicShelfRenderer.contents)
+                if(result.data?.tracks) {
+                    setAlbumList(result.data.tracks)
+                }else {
+                    setAlbumList(result?.data?.contents?.singleColumnBrowseResultsRenderer?.tabs[0].tabRenderer.content.sectionListRenderer.contents[0].musicShelfRenderer.contents)
+                }
             }
 
         } catch (err) {
@@ -41,7 +48,7 @@ export default function AlbumScreen({ route }) {
         return () => {
             source.cancel("axios request cancelled");
         }
-    }, [])
+    }, [route])
 
     return route?.params?.obj && (
         <View style={styles.container}>
@@ -54,7 +61,7 @@ export default function AlbumScreen({ route }) {
                </View>
                <FlatList
                 data={albumList}
-                renderItem={({ item }) => <AlbumList list={item.musicResponsiveListItemRenderer} obj={obj}/>}
+                renderItem={({ item, index }) => <AlbumList i={index} list={item?.videoId ? item : item.musicResponsiveListItemRenderer} obj={obj}/>}
                 ListHeaderComponent={() => <Header obj={obj} title={title}/>}
                />
                </>

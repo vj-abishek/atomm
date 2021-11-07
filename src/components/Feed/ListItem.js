@@ -9,26 +9,34 @@ import { PlaySong } from '../../utils/play';
 class ListItem extends PureComponent {
     handlePress = async (params) => {
         let obj = {}
+        if('videoId' in params && !('playlistId' in params)) {
+            this.props.updatePlayer({
+                show: true,
+                isLoading: true
+            })
+
+            await PlaySong(0, params.videoId, params.thumbnails[0].url )
+            return
+        }
         if('videoId' in params && 'playlistId' in params) {
             obj.isSong = true
             obj.title = params.title
             obj.artwork = params.thumbnails[0].url
             obj.videoId = params.videoId
             obj.playlistId = params.playlistId
-            // this.props.add(obj)
 
             this.props.updatePlayer({
                 show: true,
                 isLoading: true
             })
 
-            // if not avaliable get the playlist
+            await PlaySong(-1, params.videoId, params.thumbnails[0].url)
+
             const { playlist: cPlaylist } = await getPlaylistThunk({ videoId: params.videoId, playlistId: params.playlistId })
+
             this.props.setPlayList({
                 playlist: cPlaylist
             })
-
-            await PlaySong(0, params.videoId)
             return
         }
 
@@ -38,7 +46,7 @@ class ListItem extends PureComponent {
             obj.thumbnails = params.thumbnails[0].url
             obj.subtitle = params.subtitle
             obj.playlistId = params.playlistId
-            this.props.navigation.navigate('Album',
+            this.props.navigation.navigate('HomeAlbum',
              {
                 title: params.title,
                 obj,

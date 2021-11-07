@@ -3,19 +3,17 @@ import axios from 'axios'
 import {View, StyleSheet, ActivityIndicator} from 'react-native'
 import theme from '../theme/theme'
 import HomeFeed from '../components/Feed/HomeFeed'
+import { REACT_APP_API_URL } from '../../globals'
 
-const URL = 'https://beatbump.ml/trending.json?q=browse'
-
-
+const url = REACT_APP_API_URL
 
 export default function HomeScreen({navigation}) {
     const [homeFeedData, setHomeFeedData] = useState(null)
-
     const getHomePageData = async (token) => {
        try {
         const result = await axios({
             method: 'GET',
-            url: URL,
+            url: `${url}trending.json?q=browse`,
             headers: {
                 Accept: 'application/json',
                 'Content-Type': 'application/json'

@@ -4,6 +4,8 @@ const theme = {
     sy: 'rgb(40, 40, 40)',
     gray: 'rgb(179, 179, 179)',
     txt: '#fff',
-    border: 'rgb(24, 24, 24)'
+    txtSy: '#b3b3b3',
+    border: 'rgb(24, 24, 24)',
+    playerBg: '#b3b3b3',
 }
 export default theme;

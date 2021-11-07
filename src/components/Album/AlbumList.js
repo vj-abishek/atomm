@@ -1,19 +1,41 @@
 import React from 'react'
 import { View, Text, StyleSheet, TouchableNativeFeedback } from 'react-native'
-import { getPlaylistThunk,  setPlayList,  updatePlayer } from '../../store/features/playerSlice'
+import { getPlaylistThunk, setPlayList, updatePlayer } from '../../store/features/playerSlice'
 import theme from '../../theme/theme'
 import { useDispatch } from 'react-redux'
 import { PlaySong } from '../../utils/play'
 
-export default function AlbumList({ list, obj }) {
+export default function AlbumList({ list, i }) {
     const dispatch = useDispatch()
+    let title, playlistId, videoId, subtitle, currentIndex, duration, index;
 
-    const title = list.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0].text
-    const subtitle = list.flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs
-    const duration = list.fixedColumns[0].musicResponsiveListItemFixedColumnRenderer.text.runs[0].text
-    const index = list.index.runs[0].text
-    const { videoId } = list.playlistItemData
-    const currentIndex = parseInt(index) - 1
+    // if it is playlist
+    if (list?.videoId) {
+        const { title: tl, playlistId: plId, videoId: vdId, subtitle: st } = list
+
+        title = tl
+        playlistId = plId
+        videoId = vdId
+        subtitle = st
+        currentIndex = i
+        index = i + 1
+
+    } else if (list?.flexColumns) { // if it is a album
+        const { text, navigationEndpoint } = list?.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0]
+        const st = list?.flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text.runs
+        const dt = list?.fixedColumns[0].musicResponsiveListItemFixedColumnRenderer.text.runs[0].text
+        const inx = list?.index.runs[0].text
+        const { videoId: vdId } = list.playlistItemData
+        const cI = parseInt(inx) - 1
+
+        title = text
+        videoId = vdId
+        subtitle = st
+        duration = dt
+        currentIndex = cI
+        index = inx
+        playlistId = navigationEndpoint.watchEndpoint.playlistId
+    } else return null
 
 
     const getNextList = async () => {
@@ -23,21 +45,24 @@ export default function AlbumList({ list, obj }) {
             isLoading: true
         }))
 
-        const { playlist: cPlaylist } = await getPlaylistThunk({ videoId, playlistId: obj.playlistId })
 
-        dispatch(setPlayList({
-            playlist: cPlaylist
-        }))
+        await PlaySong(currentIndex, videoId)
 
-        await PlaySong(currentIndex, obj.videoId)
+        const { playlist: cPlaylist } = await getPlaylistThunk({ videoId, playlistId })
+
+        if (cPlaylist) {
+            dispatch(setPlayList({
+                playlist: cPlaylist
+            }))
+        }
     }
 
     return (
         <TouchableNativeFeedback onPress={getNextList}>
             <View style={styles.container}>
-                <View style={{flexDirection: 'row', flex: 2}}>
+                <View style={{ flexDirection: 'row', flex: 2 }}>
                     <Text style={styles.index}>{index}</Text>
-                    <View style={{flex: 2}}>
+                    <View style={{ flex: 2 }}>
                         <Text style={styles.itemText}>{title}</Text>
                         <Text numberOfLines={1} style={styles.subtitle}>
                             {subtitle && subtitle?.map((st, i) => (
@@ -46,8 +71,8 @@ export default function AlbumList({ list, obj }) {
                         </Text>
                     </View>
                 </View>
-                <Text>{duration}</Text>
-          </View>
+                {duration && (<Text style={styles.duration}>{duration}</Text>)}
+            </View>
         </TouchableNativeFeedback>
     )
 }
@@ -75,10 +100,14 @@ const styles = StyleSheet.create({
         fontSize: 14,
     },
     index: {
-        textAlign: 'center',
         padding: 8,
         fontSize: 16,
         marginRight: 13,
-        width: 35
+        width: 35,
+        color: theme.txtSy
+    },
+    duration: {
+        color: theme.txtSy,
     }
+
 })
