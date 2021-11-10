@@ -11,13 +11,14 @@ import TrackPlayer, { Capability } from 'react-native-track-player';
 import SearchScreenStack from './navigation/SearchScreenStack';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import PlayerUI from './navigation/PlayerUI';
+import PlayListUI from './components/Playlist/index'
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator()
 
 const TabBarComponent = props => <BottomTabBar {...props} />;
 const customTabComponent = (props) => (
-  <View style={{backgroundColor: theme.bg}}>
+  <View style={{ backgroundColor: theme.bg }}>
     <Player />
     <TabBarComponent {...props} />
   </View>
@@ -34,15 +35,30 @@ const TabNavigation = () => {
 
 const StackNavigation = () => {
   return (
-    <Stack.Navigator initialRouteName="HomeStack" headerMode="none" transitionerStyle={{backgroundColor: theme.bg}} screenOptions={{
-      headerShown: false,
-      headerTransparent: true
-    }}>
+    <Stack.Navigator
+      initialRouteName="HomeStack"
+      headerMode="none"
+      transitionerStyle={{
+        backgroundColor: theme.bg
+      }}
+      screenOptions={{
+        headerShown: false,
+        headerTransparent: true,
+      }}>
       <Stack.Group>
-        <Stack.Screen  name="HomeStack" component={TabNavigation} />
+        <Stack.Screen name="HomeStack" component={TabNavigation} />
       </Stack.Group>
       <Stack.Group screenOptions={{ presentation: 'modal' }}>
         <Stack.Screen name="PlayerUI" component={PlayerUI} />
+        <Stack.Screen name="Playlist" options={{
+          title: 'Current Playlist',
+          headerTintColor: theme.txt,
+          headerStyle: {
+            backgroundColor: theme.bg,
+          },
+          headerShown: true,
+          headerTransparent: false
+        }} component={PlayListUI} />
       </Stack.Group>
     </Stack.Navigator>
   )
@@ -85,14 +101,14 @@ const App = () => {
   }, []);
 
   return (
-    <View style={{backgroundColor: theme.bg, flex: 1}}>
+    <View style={{ backgroundColor: theme.bg, flex: 1 }}>
       <StatusBar
         translucent
         backgroundColor="transparent"
         barStyle="light-content"
       />
       <View style={{ backgroundColor: theme.bg, flex: 1 }}>
-        <NavigationContainer style={{backgroundColor: theme.bg}} transitionerStyle={{backgroundColor: theme.bg}} >
+        <NavigationContainer style={{ backgroundColor: theme.bg }} transitionerStyle={{ backgroundColor: theme.bg }} >
           <StackNavigation />
         </NavigationContainer>
       </View>

@@ -21,28 +21,6 @@ export default function SearchScreen({ navigation }) {
     const { search: searchTerm } = useSelector(state => state.search)
     const ref = useRef(null)
 
-    async function updateSearch(search) {
-        setSearch({ search })
-
-        try {
-            const result = await axios({
-                url: `${url}get_search_suggestions.json?q=${search}`,
-                method: 'GET'
-            })
-
-            if (result.status === 200) {
-                const data = result.data
-                if (data.length > 5) {
-                    data.length = 5
-                }
-                setSearchResult(data)
-            }
-
-        } catch (err) {
-            console.log(err)
-        }
-    }
-
     const getSearchResults = async (sTearm = null) => {
         const result = await searchJson(sTearm ? sTearm : searchTerm)
         const data = result.content
@@ -55,6 +33,40 @@ export default function SearchScreen({ navigation }) {
     useEffect(() => {
         ref.current.focus()
     }, [])
+
+    useEffect(() => {
+        const cancelToken = axios.CancelToken;
+        const source = cancelToken.source();
+
+        const fetchResult = async () => {
+            if (search.search.length > 0) {
+                try {
+                    const result = await axios({
+                        url: `${url}get_search_suggestions.json?q=${search.search}`,
+                        method: 'GET',
+                        cancelToken: source.token
+                    })
+
+                    if (result.status === 200) {
+                        const data = result.data
+                        if (data.length > 5) {
+                            data.length = 5
+                        }
+                        setSearchResult(data)
+                    }
+
+                } catch (err) {
+                    console.log(err)
+                }
+            }
+        }
+
+        fetchResult();
+
+        return () => {
+            source.cancel("axios request cancelled");
+        }
+    }, [search])
 
     useEffect(() => {
         if (searchTerm) {
@@ -70,7 +82,7 @@ export default function SearchScreen({ navigation }) {
             >
                 <SearchBar
                     placeholder='Songs, Artists or playlist'
-                    onChangeText={updateSearch}
+                    onChangeText={(search) => setSearch({ search })}
                     value={search.search}
                     round={true}
                     ref={ref}

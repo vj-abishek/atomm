@@ -1,7 +1,7 @@
 import TrackPlayer from 'react-native-track-player'
 import { store } from "../store/store"
 import ImageColors from 'react-native-image-colors'
-import { getSong, setPlayer, setThumbnail, setVibrant, updatePlayer, updateplayerstatus } from '../store/features/playerSlice';
+import { getSong, setPlayer, setVibrant, updatePlayer, updateplayerstatus } from '../store/features/playerSlice';
 import theme from '../theme/theme';
 
 const parseProxyRedir = (url) => {
@@ -39,8 +39,10 @@ const fetchColors = async (artwork) => {
     fallback: theme.bg,
     quality: 'low',
     pixelSpacing: 5,
-    cache: true
+    cache: true,
+    key: artwork.split('/')[4]
   })
+
   const { darkMuted } = result
   store.dispatch(setVibrant({
     vibrant: {
@@ -50,14 +52,15 @@ const fetchColors = async (artwork) => {
   }))
 }
 
-export const PlaySong = async (currentIndex = 0, videoId = null, thumbnail = null) => {
-  const state = store.getState().player
-  const playlist = state.playlist
-  let playListId = null
+export const PlaySong = async (currentIndex = 0, videoId = null, thumbnail = null, currentThumbnail = false) => {
 
   store.dispatch(updatePlayer({
     isLoading: true
   }))
+
+  const state = store.getState().player
+  const playlist = state.playlist
+  let playListId = null
 
   if ((playlist?.length || videoId) && currentIndex !== null) {
 
@@ -91,40 +94,39 @@ export const PlaySong = async (currentIndex = 0, videoId = null, thumbnail = nul
       if (arr.length !== 0) {
 
         let artwork = null;
+        const url = arr[0].url
+        const title = result.data.videoDetails.title
+        const duration = parseInt(result.data.videoDetails.lengthSeconds)
+        const artist = result.data.videoDetails.author.replace('- Topic', '')
+        const tb = result.data.videoDetails.thumbnail.thumbnails
 
         if (thumbnail) {
           artwork = thumbnail.replace('w60', 'w544').replace('h60', 'h544')
         } else {
-          const tb = result.data.videoDetails.thumbnail.thumbnails
-          artwork = tb.length > 1 ? tb[tb.length - 2].url : tb.thumbnails[0].url
+          artwork = tb[tb.length - 1].url
         }
-
-        store.dispatch(setPlayer({
-          url: arr[0].url,
-          title: result.data.videoDetails.title,
-          duration: parseInt(result.data.videoDetails.lengthSeconds),
-          artist: result.data.videoDetails.author.replace('- Topic', ''),
-          thumbnail: artwork
-        }))
 
         await TrackPlayer.reset();
 
-        artwork = result.data.videoDetails.thumbnail.thumbnails.length > 1 ? result.data.videoDetails.thumbnail.thumbnails[1].url : result.data.videoDetails.thumbnail.thumbnails[0].url
-        const playerStatus = store.getState().player.playerStatus
-
-        if (playerStatus.url) {
-          await TrackPlayer.add({
-            url: playerStatus.url,
-            title: playerStatus.title,
-            artist: playerStatus.artist,
-            artwork: artwork,
-            duration: playerStatus.duration,
-          })
-        }
+        await TrackPlayer.add({
+          url,
+          title,
+          artist,
+          artwork,
+          duration,
+        })
 
         await TrackPlayer.play()
 
         fetchColors(artwork)
+
+        store.dispatch(setPlayer({
+          url,
+          title,
+          duration,
+          artist,
+          thumbnail: artwork
+        }))
 
       }
       store.dispatch(updatePlayer({

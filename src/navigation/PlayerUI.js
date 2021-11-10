@@ -1,11 +1,10 @@
 import { useNavigation } from '@react-navigation/core'
 import React, { useEffect, useState, useRef } from 'react'
-import { View, StyleSheet,  ActivityIndicator, TouchableWithoutFeedback, Text,  Dimensions } from 'react-native'
+import { View, StyleSheet, ActivityIndicator, TouchableWithoutFeedback, Text, Dimensions, AppState, TouchableOpacity } from 'react-native'
 import { Image } from 'react-native-elements'
 import LinearGradient from 'react-native-linear-gradient'
 import Slider from '@react-native-community/slider'
-import BottomSheet from "react-native-gesture-bottom-sheet";
-import TrackPlayer, {  useProgress, usePlaybackState, State } from 'react-native-track-player'
+import TrackPlayer, { useProgress, usePlaybackState, State } from 'react-native-track-player'
 import AntDesign from 'react-native-vector-icons/AntDesign'
 import FontAwesome from 'react-native-vector-icons/FontAwesome'
 import MaterialIconCommunity from 'react-native-vector-icons/MaterialCommunityIcons'
@@ -13,8 +12,8 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons'
 import { useSelector } from 'react-redux'
 import { togglePlayback } from '../player'
 import theme from '../theme/theme'
-import Playlist from '../components/Playlist/index'
-import { Previous, Next, shadeColor } from '../utils/play'
+import { Previous, Next  } from '../utils/play'
+import { TouchableNativeFeedback } from 'react-native'
 
 // seconds to minutes
 const secToMin = (sec) => {
@@ -22,6 +21,15 @@ const secToMin = (sec) => {
     const seconds = sec - minutes * 60
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
 }
+
+// second to HH:MM:SS and show hour only if > 1 hour
+const secToTime = (sec) => {
+    const hours = Math.floor(sec / 3600)
+    const minutes = Math.floor((sec - hours * 3600) / 60)
+    const seconds = sec - hours * 3600 - minutes * 60
+    return `${hours > 0 ? `${hours}:` : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
+}
+
 
 // get height from dimensions react native
 const getHeightFromDimensions = () => {
@@ -37,7 +45,10 @@ export default function PlayerUI() {
     const { bottomPlayerStatus, playerStatus, vibrant } = useSelector(state => state.player)
 
     const navigation = useNavigation()
-    const progress = useProgress()
+    const [appState, setAppState] = useState('active')
+    const { duration, position } = useProgress(
+        appState === 'active' ? 1000 : 50000
+    )
     const playbackState = usePlaybackState();
 
     const bottomSheet = useRef()
@@ -50,6 +61,13 @@ export default function PlayerUI() {
         }
     }, [playerStatus])
 
+    const appStateChange = appState => setAppState(appState)
+
+    useEffect(() => {
+        const subscription = AppState.addEventListener('change', appStateChange)
+        return () => subscription.remove()
+    }, [])
+
     return (
         <LinearGradient
             colors={[vibrant.primary, theme.bg]}
@@ -57,7 +75,7 @@ export default function PlayerUI() {
             end={{ x: 1, y: 1 }}
             style={Styles.container}
         >
-            <View style={{maxWidth: 500, width: '85%' ,flex: 1, bottom: 0, position: 'absolute'}}>
+            <View style={{ maxWidth: 500, width: '85%', flex: 1, bottom: 0, position: 'absolute' }}>
                 <View>
                     {artwork ? (
                         <Image
@@ -82,9 +100,9 @@ export default function PlayerUI() {
                         <View style={{ width: '100%' }}>
                             <Slider
                                 style={Styles.progressContainer}
-                                value={progress.position}
+                                value={position}
                                 minimumValue={0}
-                                maximumValue={progress.duration}
+                                maximumValue={duration}
                                 allowTouchTrack
                                 thumbTintColor={theme.txt}
                                 minimumTrackTintColor={theme.bg}
@@ -96,10 +114,10 @@ export default function PlayerUI() {
                             />
                             <View style={Styles.progressLabel}>
                                 <Text style={Styles.progressLabelText}>
-                                    {new Date(progress.position * 1000).toISOString().substr(14, 5)}
+                                    {new Date(position * 1000).toISOString().substr(14, 5)}
                                 </Text>
                                 <Text style={Styles.progressLabelText}>
-                                    {secToMin(progress.duration)}
+                                    {secToTime(duration)}
                                 </Text>
                             </View>
                         </View>
@@ -108,12 +126,12 @@ export default function PlayerUI() {
 
                     <View style={Styles.playerConatiner}>
                         <View style={{ flexDirection: 'row', height: 70, justifyContent: 'center', alignItems: 'center', width: '94%' }}>
-                            <TouchableWithoutFeedback onPress={() => Previous()}>
+                            <TouchableOpacity onPress={() => Previous()}>
                                 <View style={{ marginRight: 40 }}>
                                     <MaterialIcon style={{ marginLeft: 20 }} name="skip-previous" color={theme.txt} size={35} />
                                 </View>
-                            </TouchableWithoutFeedback>
-                            <TouchableWithoutFeedback onPress={() => togglePlayback(playbackState)}>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => togglePlayback(playbackState)}>
                                 <View style={Styles.playButton}>
                                     {bottomPlayerStatus.isLoading || playbackState === State.Buffering || playbackState === State.Connecting ? (
                                         <ActivityIndicator size="large" color={theme.txt} />
@@ -125,31 +143,27 @@ export default function PlayerUI() {
                                         )
                                     )}
                                 </View>
-                            </TouchableWithoutFeedback>
-                            <TouchableWithoutFeedback onPress={() => Next()}>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => Next()}>
                                 <View>
                                     <MaterialIcon style={{ marginLeft: 40 }} name="skip-next" color={theme.txt} size={35} />
                                 </View>
-                            </TouchableWithoutFeedback>
+                            </TouchableOpacity>
                         </View>
                     </View>
                 </View>
 
                 <View style={Styles.header}>
                     <TouchableWithoutFeedback onPress={() => navigation.pop()}>
-                        <AntDesign name="close" size={25} color={theme.txt} />
+                        <AntDesign name="close" size={25} color={theme.txtSy} />
                     </TouchableWithoutFeedback>
                     <TouchableWithoutFeedback
-                        onPress={() => bottomSheet.current.show()}
+                        onPress={() => navigation.navigate('Playlist')}
                     >
-                        <MaterialIconCommunity name="playlist-music" size={25} color={theme.txt} />
+                        <MaterialIconCommunity name="playlist-music" size={25} color={theme.txtSy} />
                     </TouchableWithoutFeedback>
                 </View>
             </View>
-
-            <BottomSheet hasDraggableIcon ref={bottomSheet} height={getHeightFromDimensions()} sheetBackgroundColor={shadeColor(vibrant.primary, -60)}>
-                <Playlist />
-            </BottomSheet>
         </LinearGradient>
     )
 }
@@ -212,6 +226,6 @@ const Styles = StyleSheet.create({
         marginTop: 50,
         marginBottom: 50,
         flexDirection: 'row',
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
     }
 })

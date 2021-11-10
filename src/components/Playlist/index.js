@@ -11,12 +11,12 @@ const Playlist = ({ item, index, playerStatus, vibrant, bottomPlayerStatus }) =>
 
     const handlePress = async () => {
         setcIndex(index)
-        await PlaySong(index, item.videoId)
+        await PlaySong(index, item.videoId, item.thumbnail)
     }
 
     return (
         <TouchableNativeFeedback key={`PlAyLiSt_INDEX_BOTTOM_ScREEN${index}`} onPress={handlePress}>
-            <View style={[styles.item, playerStatus.cpIndex === index ? { backgroundColor: vibrant.primary } : {}]}>
+            <View style={[styles.item, playerStatus.cpIndex === index ? { backgroundColor: theme.sy } : {}]}>
                 <View style={{ flexDirection: 'row', flex: 2, alignItems: 'center' }}>
                     <View>
                         <Image
@@ -24,7 +24,11 @@ const Playlist = ({ item, index, playerStatus, vibrant, bottomPlayerStatus }) =>
                             resizeMode="cover"
                             PlaceholderContent={<ActivityIndicator size="small" color={theme.txt} />}
                             style={styles.image} />
-                        {cIndex === index && bottomPlayerStatus.isLoading ? <View style={[styles.image, styles.position]}><ActivityIndicator size="small" color={theme.txt} /></View> : null}
+                        {cIndex === index && bottomPlayerStatus.isLoading ? (
+                            <View style={[styles.image, styles.position]}>
+                                <ActivityIndicator size="small" color={theme.txt} />
+                            </View>
+                        ) : null}
                     </View>
 
                     <View style={{ marginLeft: 15, flex: 1, marginRight: 10 }}>
@@ -52,7 +56,7 @@ export default function index() {
             />
         </View>
     ) : (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.bg }}>
             <Text style={{ color: theme.txt, fontSize: 20 }}>Your Playlist is empty 💔</Text>
         </View>
     )
@@ -61,7 +65,9 @@ export default function index() {
 const styles = StyleSheet.create({
     container: {
         padding: 10,
-        paddingTop: 30
+        paddingTop: 30,
+        backgroundColor: theme.bg,
+        flex: 1
     },
     item: {
         padding: 10,

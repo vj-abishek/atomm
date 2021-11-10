@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { View, Text, StyleSheet, TouchableWithoutFeedback, ActivityIndicator, TouchableHighlight } from 'react-native'
+import { View, Text, StyleSheet, TouchableWithoutFeedback, ActivityIndicator, TouchableHighlight, AppState } from 'react-native'
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons'
 import FontAwesome from 'react-native-vector-icons/FontAwesome'
 import theme from '../theme/theme'
@@ -17,7 +17,7 @@ export const togglePlayback = async (playbackState) => {
 
     if (currentTrack === null) {
         if (data?.url) {
-            const { url, title, artist,  artwork, duration } = data
+            const { url, title, artist, artwork, duration } = data
             await TrackPlayer.add({
                 url,
                 title,
@@ -51,9 +51,10 @@ export default function index() {
     const [artist, setArtist] = useState(null)
     const [url, setUrl] = useState(null)
     const [duration, setDuration] = useState(null)
-    const progress = useProgress()
-    const [percentage, setPrecentage] = useState(0);
-
+    const [appState, setAppState] = useState('active')
+    const { duration: Progressduration, position } = useProgress(
+        appState === 'active' ? 1000 : 50000
+    )
     useTrackPlayerEvents([Event.PlaybackTrackChanged], async event => {
         if (
             event.type === Event.PlaybackTrackChanged &&
@@ -82,20 +83,18 @@ export default function index() {
         }
     }, [playerStatus])
 
+    const appStateChange = appState => setAppState(appState)
+
     useEffect(() => {
-        const duration = progress.duration
-        const position = progress.position
-
-        const percentage = (position / duration) * 100
-        setPrecentage(percentage)
-
-    }, [progress])
+        const subscription = AppState.addEventListener('change', appStateChange)
+        return () => subscription.remove()
+    }, [])
 
     return (bottomPlayerStatus?.show) ? (
         <TouchableHighlight onPress={() => navigation.navigate('PlayerUI')}>
             <>
                 <View style={[styles.progress, { backgroundColor: vibrant.secondary }]}>
-                    <View style={{ backgroundColor: theme.brand, borderRadius: 16, width: `${percentage}%`, transition: 'width 0.75s ease' }}></View>
+                    <View style={{ backgroundColor: theme.brand, borderRadius: 16, width: `${(position / Progressduration) * 100}%`, transition: 'width 0.75s ease' }}></View>
                 </View>
                 <View style={[styles.player, { backgroundColor: vibrant.secondary }]}>
                     {artwork ? (

@@ -5,9 +5,10 @@ import theme from '../../theme/theme'
 import { useDispatch } from 'react-redux'
 import { PlaySong } from '../../utils/play'
 
-export default function AlbumList({ list, i }) {
+export default function AlbumList({ list, i, obj }) {
     const dispatch = useDispatch()
     let title, playlistId, videoId, subtitle, currentIndex, duration, index;
+    const thumbnail = obj.thumbnails
 
     // if it is playlist
     if (list?.videoId) {
@@ -45,8 +46,7 @@ export default function AlbumList({ list, i }) {
             isLoading: true
         }))
 
-
-        await PlaySong(currentIndex, videoId)
+        await PlaySong(currentIndex, videoId, thumbnail, true)
 
         const { playlist: cPlaylist } = await getPlaylistThunk({ videoId, playlistId })
 

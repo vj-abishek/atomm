@@ -5847,6 +5847,11 @@ react-native-linear-gradient@^2.5.6:
   resolved "https://registry.yarnpkg.com/react-native-linear-gradient/-/react-native-linear-gradient-2.5.6.tgz#96215cbc5ec7a01247a20890888aa75b834d44a0"
   integrity sha512-HDwEaXcQIuXXCV70O+bK1rizFong3wj+5Q/jSyifKFLg0VWF95xh8XQgfzXwtq0NggL9vNjPKXa016KuFu+VFg==
 
+react-native-mmkv-storage@^0.6.6:
+  version "0.6.6"
+  resolved "https://registry.yarnpkg.com/react-native-mmkv-storage/-/react-native-mmkv-storage-0.6.6.tgz#bd2cabecdcfa751dff7c3b517bce77a2e9a45355"
+  integrity sha512-SV7tm3K5nD9x0KZf6ayj8G+xx1LmqKnwcvhXrg66awopEf8Y7JAy9kH4G4ngJzBWfXVyYo5E93RPv9MlQdCfxQ==
+
 react-native-ratings@8.0.4:
   version "8.0.4"
   resolved "https://registry.yarnpkg.com/react-native-ratings/-/react-native-ratings-8.0.4.tgz#efd5ebad8acc08bf98d34d39b18fb7a6813ef991"
