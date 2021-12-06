@@ -1,6 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit'
 import axios from 'axios'
 import { REACT_APP_API_URL } from '../../../globals'
+import { getPlayList } from '../../api/playlist'
+import { getVideo } from '../../api/video'
 import theme from '../../theme/theme'
 
 
@@ -26,7 +28,12 @@ const initialState = {
   vibrant: {
     primary: theme.sy,
     secondary: theme.sy,
-  }
+  },
+  focusSearch: {
+    count: 0,
+    isFocused: false,
+  },
+  playlistId: null,
 }
 
 const url = `${REACT_APP_API_URL}api/`
@@ -34,14 +41,30 @@ const url = `${REACT_APP_API_URL}api/`
 export const getSong = async ({ playlist, currentIndex }) => {
   console.log('getting from bakground', currentIndex)
   try {
+    // const stream = await axios({
+    //   url: `${url}api.json`,
+    //   method: 'POST',
+    //   data: `endpoint=player&videoId=${playlist}&playlistId=`
+    // })
+
+    const data = await getVideo(playlist)
+    return { data, currentIndex }
+
+  } catch (err) {
+    console.log(err)
+    return null
+  }
+}
+
+export const getQueue = async ({ playlistId }) => {
+  try {
     const stream = await axios({
-      url: `${url}api.json`,
-      method: 'POST',
-      data: `endpoint=player&videoId=${playlist}&playlistId=`
+      url: `${url}getQueue.json?&playlistId=${playlistId}`,
+      method: 'GET'
     })
 
     if (stream.status === 200) {
-      return { data: stream.data, currentIndex }
+      return { playlist: stream.data }
     }
   } catch (err) {
     console.log(err)
@@ -56,9 +79,11 @@ export const getPlaylistThunk = async ({ videoId, playlistId }) => {
       method: 'GET'
     })
 
+    // const playlist = await getPlayList(playlistId, musicVideoType)
     if (result.status === 200) {
       return { playlist: result.data.results }
     }
+
   } catch (err) {
     console.log(err)
   }
@@ -93,6 +118,8 @@ export const counterSlice = createSlice({
     },
     setPlayList: (state, { payload }) => {
       state.playlist = payload.playlist
+
+      state.playlistId = payload.playlistId
     },
     playNow: (state, payload) => {
       state.playerStatus = {
@@ -112,17 +139,20 @@ export const counterSlice = createSlice({
     setVibrant: (state, { payload }) => {
       state.vibrant = payload.vibrant
     },
-    setPlayer : (state, { payload }) => {
+    setPlayer: (state, { payload }) => {
       state.playerStatus = {
         ...state.playerStatus,
         ...payload
       }
+    },
+    setFocusSearch: (state, { payload }) => {
+      state.focusSearch = payload.focusSearch
     }
   }
 })
 
 // Action creators are generated for each case reducer function
-export const { add, updatePlayer, setPlayList, playNow, updateplayerstatus, setRandomId, setThumbnail, setVibrant, setPlayer } = counterSlice.actions
+export const { add, updatePlayer, setPlayList, playNow, updateplayerstatus, setRandomId, setThumbnail, setVibrant, setPlayer, setFocusSearch } = counterSlice.actions
 
 
 export default counterSlice.reducer

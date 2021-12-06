@@ -1,11 +1,12 @@
 import React, { forwardRef } from 'react'
-import { View, Text, StyleSheet,  TouchableOpacity } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import SearchIcon from 'react-native-vector-icons/AntDesign'
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons'
 import { useDispatch } from 'react-redux'
 import { setSearch } from '../../store/features/searchSlice'
 import theme from '../../theme/theme'
 
-const Result =  forwardRef(({ search }, ref) => {
+const Result = forwardRef(({ search, suggestions }, ref) => {
 
     const dispatch = useDispatch()
 
@@ -20,8 +21,13 @@ const Result =  forwardRef(({ search }, ref) => {
         <TouchableOpacity onPress={handlePress}>
             <View style={styles.container}>
                 <View style={styles.searchSuggestion}>
-                    <SearchIcon style={styles.icon} name="search1" size={16} color={theme.txt}/>
-                    <Text style={{flex: 1, color: theme.txtSy}}>{search.query}</Text>
+                    {suggestions ? (
+                        <MaterialIcon style={styles.icon} name="history" size={20} color={theme.txtSy} />
+                    ) : (
+                        <SearchIcon style={styles.icon} name="search1" size={16} color={theme.txtSy} />
+                    )}
+
+                    <Text style={{ flex: 1, color: theme.txt }}>{search.query}</Text>
                 </View>
             </View>
         </TouchableOpacity>
@@ -35,18 +41,20 @@ const styles = StyleSheet.create({
     container: {
         backgroundColor: theme.bg,
         position: 'relative',
-        zIndex: 2
+        zIndex: 3
     },
     searchSuggestion: {
         fontSize: 16,
         color: theme.txt,
         padding: 12,
         backgroundColor: theme.sy,
-        flexDirection: 'row'
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center'
     },
     icon: {
         margin: 5,
-        marginRight: 20,
+        marginRight: 12,
     }
 })
 

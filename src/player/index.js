@@ -2,31 +2,34 @@ import React, { useEffect, useState } from 'react'
 import { View, Text, StyleSheet, TouchableWithoutFeedback, ActivityIndicator, TouchableHighlight, AppState } from 'react-native'
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons'
 import FontAwesome from 'react-native-vector-icons/FontAwesome'
+import Ionicons from 'react-native-vector-icons/Ionicons'
+import { useMMKVStorage } from "react-native-mmkv-storage";
 import theme from '../theme/theme'
-import TrackPlayer, { Event, usePlaybackState, useTrackPlayerEvents, State, useProgress } from 'react-native-track-player';
-import { useSelector } from 'react-redux'
-import { Next } from '../utils/play'
+import TrackPlayer, { usePlaybackState, State, useProgress } from 'react-native-track-player';
+import { useSelector, useDispatch } from 'react-redux'
+import { Next, PlaySong } from '../utils/play'
 import { Image } from 'react-native-elements/dist/image/Image'
 import { useNavigation } from '@react-navigation/native';
+import { getPlaylistThunk, setPlayList, updatePlayer } from '../store/features/playerSlice';
+import { MMKV } from '../storage/index';
 
-let data = {}
-
-
-export const togglePlayback = async (playbackState) => {
+export const togglePlayback = async (playbackState, localData, dispatch) => {
     const currentTrack = await TrackPlayer.getCurrentTrack();
 
     if (currentTrack === null) {
-        if (data?.url) {
-            const { url, title, artist, artwork, duration } = data
-            await TrackPlayer.add({
-                url,
-                title,
-                artist,
-                artwork,
-                duration,
-            })
+        dispatch(updatePlayer({
+            show: true,
+            isLoading: true
+        }))
 
-            await TrackPlayer.play()
+        await PlaySong(0, localData.videoId, localData.artwork, localData.playlistId)
+
+        if (localData.playlistId) {
+            const { playlist: cPlaylist } = await getPlaylistThunk({ videoId: localData.videoId, playlistId: localData.playlistId })
+
+            dispatch(setPlayList({
+                playlist: cPlaylist,
+            }))
         }
 
     } else {
@@ -44,44 +47,14 @@ export const togglePlayback = async (playbackState) => {
 
 export default function index() {
     const navigation = useNavigation()
-    const { bottomPlayerStatus, vibrant, playerStatus } = useSelector(state => state.player)
+    const { bottomPlayerStatus, vibrant } = useSelector(state => state.player)
     const playbackState = usePlaybackState();
-    const [trackTitle, setTrackTitle] = useState('');
-    const [artwork, setArtwork] = useState(null);
-    const [artist, setArtist] = useState(null)
-    const [url, setUrl] = useState(null)
-    const [duration, setDuration] = useState(null)
     const [appState, setAppState] = useState('active')
     const { duration: Progressduration, position } = useProgress(
         appState === 'active' ? 1000 : 50000
     )
-    useTrackPlayerEvents([Event.PlaybackTrackChanged], async event => {
-        if (
-            event.type === Event.PlaybackTrackChanged &&
-            event.nextTrack !== undefined
-        ) {
-            const track = await TrackPlayer.getTrack(event.nextTrack);
-            const { artwork } = track || {};
-            setArtwork(() => artwork);
-
-            data = {
-                url,
-                artist,
-                duration,
-                title: trackTitle,
-                artwork
-            }
-        }
-    });
-
-    useEffect(() => {
-        if (playerStatus.thumbnail) {
-            setTrackTitle(() => playerStatus.title);
-            setArtist(() => playerStatus.artist);
-            setUrl(() => playerStatus.url);
-            setDuration(() => playerStatus.duration);
-        }
-    }, [playerStatus])
+    const [localData, setLocalData] = useMMKVStorage('currentsong', MMKV, null)
+    const dispatch = useDispatch()
 
     const appStateChange = appState => setAppState(appState)
 
@@ -90,6 +63,18 @@ export default function index() {
         return () => subscription.remove()
     }, [])
 
+    useEffect(() => {
+        const loadFromStorage = async () => {
+            if (localData) {
+                dispatch(updatePlayer({
+                    show: true
+                }))
+            }
+        }
+
+        loadFromStorage()
+    }, [localData])
+
     return (bottomPlayerStatus?.show) ? (
         <TouchableHighlight onPress={() => navigation.navigate('PlayerUI')}>
             <>
@@ -97,11 +82,11 @@ export default function index() {
                     <View style={{ backgroundColor: theme.brand, borderRadius: 16, width: `${(position / Progressduration) * 100}%`, transition: 'width 0.75s ease' }}></View>
                 </View>
                 <View style={[styles.player, { backgroundColor: vibrant.secondary }]}>
-                    {artwork ? (
+                    {localData?.artwork ? (
                         <Image
                             style={styles.imageStyle}
                             source={{
-                                uri: artwork,
+                                uri: localData?.artwork?.replace('h544', 'h226').replace('w544', 'w226'),
                             }}
                             resizeMode="cover"
                             PlaceholderContent={<ActivityIndicator size="small" color={theme.txt} />}
@@ -116,11 +101,11 @@ export default function index() {
                                 numberOfLines={1}
                                 style={{ color: theme.txt }}
                             >
-                                {trackTitle}
+                                {localData?.title}
                             </Text>
-                            <Text numberOfLines={1} style={{ color: theme.txtSy }}>{artist}</Text>
+                            <Text numberOfLines={1} style={{ color: theme.txtSy }}>{localData?.artist}</Text>
                         </View>
-                        <TouchableWithoutFeedback onPress={() => togglePlayback(playbackState)}>
+                        <TouchableWithoutFeedback onPress={() => togglePlayback(playbackState, localData, dispatch)}>
                             <View style={styles.playButton}>
                                 {bottomPlayerStatus.isLoading || playbackState === State.Buffering || playbackState === State.Connecting ? (
                                     <ActivityIndicator size="small" color={theme.txt} />
@@ -128,7 +113,7 @@ export default function index() {
                                     playbackState === State.Playing ? (
                                         <FontAwesome name="pause" color={theme.txt} size={16} />
                                     ) : (
-                                        <FontAwesome style={{ marginLeft: 2 }} name="play" color={theme.txt} size={16} />
+                                        <Ionicons name="play" color={theme.txt} size={20} />
                                     )
                                 )}
                             </View>
@@ -150,8 +135,7 @@ const styles = StyleSheet.create({
     player: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingTop: 10,
-        paddingBottom: 10,
+        paddingVertical: 8,
         transition: 'background 0.75s ease'
     },
     text: {
@@ -179,8 +163,8 @@ const styles = StyleSheet.create({
         elevation: 2
     },
     imageStyle: {
-        width: 40,
-        height: 40,
+        width: 45,
+        height: 45,
         borderRadius: 5,
         marginLeft: 10,
     },

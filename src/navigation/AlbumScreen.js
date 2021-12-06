@@ -62,7 +62,7 @@ export default function AlbumScreen({ route }) {
                     <FlatList
                         data={albumList}
                         renderItem={({ item, index }) => <AlbumList i={index} list={item?.videoId ? item : item.musicResponsiveListItemRenderer} obj={obj} />}
-                        ListHeaderComponent={() => <Header obj={obj} title={title} />}
+                        ListHeaderComponent={() => <Header obj={obj} title={title} albumList={albumList}/>}
                     />
                 </>
             ) : (

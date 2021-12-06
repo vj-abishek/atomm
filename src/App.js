@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator, BottomTabBar } from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import MaterialIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import Player from './player/index'
+import { useDispatch, useSelector } from 'react-redux';
+import { setFocusSearch } from './store/features/playerSlice'
 import HomeScreenStack from './navigation/HomeScreenStack';
 import theme from './theme/theme';
 import { StatusBar, View } from 'react-native';
@@ -16,19 +18,55 @@ import PlayListUI from './components/Playlist/index'
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator()
 
+const myTheme = {
+  ...DefaultTheme,
+  dark: true,
+  colors: {
+    ...DefaultTheme.colors,
+    background: theme.bg,
+  },
+}
+
 const TabBarComponent = props => <BottomTabBar {...props} />;
 const customTabComponent = (props) => (
-  <View style={{ backgroundColor: theme.bg }}>
+  <>
     <Player />
     <TabBarComponent {...props} />
-  </View>
+  </>
 )
 
 const TabNavigation = () => {
+  const dispatch = useDispatch()
+  const { focusSearch } = useSelector(state => state.player)
+
+  const handlePress = () => {
+    const { count } = focusSearch
+
+    if (count >= 1) {
+      dispatch(setFocusSearch({
+        focusSearch: {
+          isFocus: true,
+          count: 0
+        }
+      }))
+      return
+    }
+
+    dispatch(setFocusSearch({
+      focusSearch: {
+        iSFocus: false,
+        count: 1
+      }
+    }))
+  }
+
+
   return (
     <Tab.Navigator screenOptions={screenOptions} tabBar={customTabComponent}>
       <Tab.Screen name="Home" component={HomeScreenStack} />
-      <Tab.Screen name="Search" component={SearchScreenStack} />
+      <Tab.Screen listeners={{
+        tabPress: handlePress
+      }} name="Search" component={SearchScreenStack} />
     </Tab.Navigator>
   )
 }
@@ -104,11 +142,11 @@ const App = () => {
     <View style={{ backgroundColor: theme.bg, flex: 1 }}>
       <StatusBar
         translucent
-        backgroundColor="transparent"
+        backgroundColor="rgba(0,0,0,0.4)"
         barStyle="light-content"
       />
       <View style={{ backgroundColor: theme.bg, flex: 1 }}>
-        <NavigationContainer style={{ backgroundColor: theme.bg }} transitionerStyle={{ backgroundColor: theme.bg }} >
+        <NavigationContainer theme={myTheme} style={{ backgroundColor: theme.bg }} transitionerStyle={{ backgroundColor: theme.bg }} >
           <StackNavigation />
         </NavigationContainer>
       </View>
@@ -132,6 +170,7 @@ const screenOptions = ({ route }) => ({
   },
   tabBarActiveTintColor: theme.txt,
   tabBarInactiveTintColor: theme.gray,
+  tabBarHideOnKeyboard: true,
   headerShown: false,
   tabBarStyle: {
     padding: 2,

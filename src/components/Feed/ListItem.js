@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react'
-import {  Text, StyleSheet, ActivityIndicator, View, TouchableOpacity} from 'react-native'
+import { Text, StyleSheet, ActivityIndicator, View, TouchableOpacity } from 'react-native'
 import { Image } from 'react-native-elements';
 import { connect } from 'react-redux'
 import { add, addAlbum, getPlaylistThunk, setPlayList, updatePlayer } from '../../store/features/playerSlice';
@@ -9,16 +9,16 @@ import { PlaySong } from '../../utils/play';
 class ListItem extends PureComponent {
     handlePress = async (params) => {
         let obj = {}
-        if('videoId' in params && !('playlistId' in params)) {
+        if ('videoId' in params && !('playlistId' in params)) {
             this.props.updatePlayer({
                 show: true,
                 isLoading: true
             })
 
-            await PlaySong(0, params.videoId, params.thumbnails[0].url )
+            await PlaySong(0, params.videoId, params.thumbnails[0].url)
             return
         }
-        if('videoId' in params && 'playlistId' in params) {
+        if ('videoId' in params && 'playlistId' in params) {
             obj.isSong = true
             obj.title = params.title
             obj.artwork = params.thumbnails[0].url
@@ -30,27 +30,30 @@ class ListItem extends PureComponent {
                 isLoading: true
             })
 
-            await PlaySong(-1, params.videoId, params.thumbnails[0].url)
+            await PlaySong(-1, params.videoId, params.thumbnails[0].url, params.playlistId)
 
-            const { playlist: cPlaylist } = await getPlaylistThunk({ videoId: params.videoId, playlistId: params.playlistId })
+            const musicVideoType = params?.musicVideoType
+            console.log(musicVideoType, params)
+
+            const { playlist: cPlaylist } = await getPlaylistThunk({ videoId: params.videoId, playlistId: params.playlistId, musicVideoType })
 
             this.props.setPlayList({
-                playlist: cPlaylist
+                playlist: cPlaylist,
             })
             return
         }
 
-        if('endpoint' in params) {
+        if ('endpoint' in params) {
             obj.isSong = false
             obj.browseId = params.endpoint.browseId
             obj.thumbnails = params.thumbnails[0].url
             obj.subtitle = params.subtitle
             obj.playlistId = params.playlistId
             this.props.navigation.navigate('HomeAlbum',
-             {
-                title: params.title,
-                obj,
-             })
+                {
+                    title: params.title,
+                    obj,
+                })
         }
 
     }
@@ -58,14 +61,14 @@ class ListItem extends PureComponent {
     render() {
         const { item, section } = this.props
         let conditionalStyle = null
-        if(section.title) {
+        if (section.title) {
             conditionalStyle = section.title.includes('singles') ? StyleSheet.create({
                 width: 200,
                 height: 200,
                 borderRadius: 8,
             }) : StyleSheet.create({
                 borderRadius: 8,
-                aspectRatio: 16/9,
+                aspectRatio: 16 / 9,
             })
         }
 
@@ -74,7 +77,7 @@ class ListItem extends PureComponent {
                 <View style={styles.item}>
                     <Image
                         source={{
-                        uri: item &&  item.thumbnails[0].url,
+                            uri: item && item.thumbnails[0].url,
                         }}
                         style={conditionalStyle}
                         resizeMode="cover"
@@ -86,10 +89,10 @@ class ListItem extends PureComponent {
                             <Text key={`subtitle_T${i}`}>{st.text}</Text>
                         ))}
                     </Text>
-            </View>
+                </View>
             </TouchableOpacity>
 
-    ) : null
+        ) : null
     }
 }
 

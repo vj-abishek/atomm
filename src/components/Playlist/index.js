@@ -20,7 +20,7 @@ const Playlist = ({ item, index, playerStatus, vibrant, bottomPlayerStatus }) =>
                 <View style={{ flexDirection: 'row', flex: 2, alignItems: 'center' }}>
                     <View>
                         <Image
-                            source={{ uri: item.thumbnail }}
+                            source={{ uri: null }}
                             resizeMode="cover"
                             PlaceholderContent={<ActivityIndicator size="small" color={theme.txt} />}
                             style={styles.image} />
@@ -33,7 +33,7 @@ const Playlist = ({ item, index, playerStatus, vibrant, bottomPlayerStatus }) =>
 
                     <View style={{ marginLeft: 15, flex: 1, marginRight: 10 }}>
                         <Text numberOfLines={2} style={styles.text}>{item.title}</Text>
-                        <Text numberOfLines={2} style={styles.subtitle}>{item.artistInfo.artist}</Text>
+                        <Text style={styles.subtitle} numberOfLines={2}>{item.artistInfo.artist}</Text>
                     </View>
                 </View>
                 <View>
@@ -65,7 +65,6 @@ export default function index() {
 const styles = StyleSheet.create({
     container: {
         padding: 10,
-        paddingTop: 30,
         backgroundColor: theme.bg,
         flex: 1
     },

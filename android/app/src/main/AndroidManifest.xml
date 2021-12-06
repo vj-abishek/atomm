@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.atomm.musictest1">
+  package="com.atomm.musictest2">
 
     <uses-permission android:name="android.permission.INTERNET" />
 

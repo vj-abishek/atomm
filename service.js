@@ -26,18 +26,14 @@ module.exports = async function setup() {
   });
 
   TrackPlayer.addEventListener(Event.RemoteDuck, async e => {
-    if (e.permanent === true) {
-      TrackPlayer.stop();
+    if (e.paused === true) {
+      const playerState = await TrackPlayer.getState();
+      wasPausedByDuck = playerState !== State.Paused;
+      TrackPlayer.pause();
     } else {
-      if (e.paused === true) {
-        const playerState = await TrackPlayer.getState();
-        wasPausedByDuck = playerState !== State.Paused;
-        TrackPlayer.pause();
-      } else {
-        if (wasPausedByDuck === true) {
-          TrackPlayer.play();
-          wasPausedByDuck = false;
-        }
+      if (wasPausedByDuck === true) {
+        TrackPlayer.play();
+        wasPausedByDuck = false;
       }
     }
   });

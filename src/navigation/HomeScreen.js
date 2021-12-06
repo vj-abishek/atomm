@@ -4,6 +4,7 @@ import { View, StyleSheet, ActivityIndicator, TouchableOpacity, Text } from 'rea
 import theme from '../theme/theme'
 import HomeFeed from '../components/Feed/HomeFeed'
 import { REACT_APP_API_URL } from '../../globals'
+import { getHome } from '../api/home'
 
 const url = REACT_APP_API_URL
 
@@ -23,6 +24,8 @@ export default function HomeScreen({ navigation }) {
                 },
                 cancelToken: token
             })
+
+            getHome();
             if (result.status === 200) {
                 const parsedData = []
                 result.data.forEach((singleHomeData) => {
@@ -39,7 +42,7 @@ export default function HomeScreen({ navigation }) {
                 setClicked(false)
             }
         } catch (err) {
-            console.log('shit', err)
+            console.log(err)
             setClicked(true)
         }
     }

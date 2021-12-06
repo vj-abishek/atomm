@@ -1,6 +1,6 @@
 import React from 'react'
-import { View, Text, StyleSheet, ActivityIndicator, TouchableNativeFeedback } from 'react-native'
-import { Image } from 'react-native-elements'
+import { View, Text, StyleSheet, TouchableNativeFeedback } from 'react-native'
+import FastImage from 'react-native-fast-image'
 import { useDispatch } from 'react-redux'
 import { getPlaylistThunk, setPlayList, updatePlayer } from '../../store/features/playerSlice'
 import theme from '../../theme/theme'
@@ -9,7 +9,6 @@ import { PlaySong } from '../../utils/play'
 export default function Feed({ searchData, navigation }) {
     const dispatch = useDispatch()
     let correctedQuery, didYouMean;
-
 
     if (searchData?.itemSectionRenderer) {
         correctedQuery = searchData?.itemSectionRenderer?.contents[0]?.showingResultsForRenderer?.correctedQuery?.runs[0]?.text
@@ -23,7 +22,8 @@ export default function Feed({ searchData, navigation }) {
 
         const playlistId = data?.navigationEndpoint?.watchEndpoint?.playlistId
         const videoId = data?.navigationEndpoint?.watchEndpoint?.videoId
-
+        const stationPlaylistId = c?.musicResponsiveListItemRenderer?.navigationEndpoint?.watchEndpoint?.playlistId
+        const stationVideoId = c?.musicResponsiveListItemRenderer?.navigationEndpoint?.watchEndpoint?.videoId
 
         if (videoId && !playlistId) {
             dispatch(updatePlayer({
@@ -41,11 +41,26 @@ export default function Feed({ searchData, navigation }) {
                 isLoading: true
             }))
 
-            await PlaySong(0, videoId, thumbnail)
+            await PlaySong(0, videoId, thumbnail, playlistId)
 
             const { playlist: cPlaylist } = await getPlaylistThunk({ videoId, playlistId })
             dispatch(setPlayList({
-                playlist: cPlaylist
+                playlist: cPlaylist,
+            }))
+            return
+        }
+
+        if (stationVideoId && stationPlaylistId) {
+            dispatch(updatePlayer({
+                show: true,
+                isLoading: true
+            }))
+
+            await PlaySong(0, stationVideoId, null, stationPlaylistId)
+
+            const { playlist: cPlaylist } = await getPlaylistThunk({ videoId: stationVideoId, playlistId: stationPlaylistId })
+            dispatch(setPlayList({
+                playlist: cPlaylist,
             }))
             return
         }
@@ -87,6 +102,15 @@ export default function Feed({ searchData, navigation }) {
 
             return
         }
+
+        if (type === 'MUSIC_PAGE_TYPE_ARTIST') {
+
+            navigation.navigate('Artist', {
+                browseId: endpoint.browseId,
+            })
+
+            return
+        }
     }
     return searchData?.itemSectionRenderer ? (
         <View style={{ marginLeft: 20, marginTop: 15, color: theme.txt }}>
@@ -109,19 +133,21 @@ export default function Feed({ searchData, navigation }) {
 
                         if (!c?.musicResponsiveListItemRenderer?.thumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails) return null
 
-                        let thumbnail = c?.musicResponsiveListItemRenderer?.thumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails[0].url;
+                        const endpoint = c?.musicResponsiveListItemRenderer?.navigationEndpoint?.browseEndpoint
+                        const type = endpoint?.browseEndpointContextSupportedConfigs?.browseEndpointContextMusicConfig?.pageType
 
+                        const cicleImg = type === 'MUSIC_PAGE_TYPE_ARTIST' ? { borderRadius: 100 } : {}
+
+                        let thumbnail = c?.musicResponsiveListItemRenderer?.thumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails[0].url;
                         return (
                             <TouchableNativeFeedback key={`serchResultmE${i}`} onPress={() => handlePress(songTitle, c, subtitle, thumbnail)}>
                                 <View style={{ flexDirection: 'row' }}>
                                     <View style={{ padding: 10 }}>
-                                        <Image
-                                            style={styles.imageStyle}
+                                        <FastImage
+                                            style={[styles.imageStyle, cicleImg]}
                                             source={{
-                                                uri: thumbnail,
+                                                uri: thumbnail.replace('w60', 'w226').replace('h60', 'h226')
                                             }}
-                                            resizeMode="cover"
-                                            PlaceholderContent={<ActivityIndicator size="small" color={theme.txt} />}
                                         />
                                     </View>
                                     <View style={{ padding: 10, flex: 1 }}>
@@ -151,7 +177,6 @@ const styles = StyleSheet.create({
     imageStyle: {
         width: 60,
         height: 60,
-        borderRadius: 8,
     },
     title: {
         color: theme.txt,

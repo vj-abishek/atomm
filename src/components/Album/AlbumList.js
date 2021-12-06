@@ -1,13 +1,13 @@
 import React from 'react'
 import { View, Text, StyleSheet, TouchableNativeFeedback } from 'react-native'
-import { getPlaylistThunk, setPlayList, updatePlayer } from '../../store/features/playerSlice'
+import { getPlaylistThunk, getQueue, setPlayList, updatePlayer } from '../../store/features/playerSlice'
 import theme from '../../theme/theme'
 import { useDispatch } from 'react-redux'
 import { PlaySong } from '../../utils/play'
 
 export default function AlbumList({ list, i, obj }) {
     const dispatch = useDispatch()
-    let title, playlistId, videoId, subtitle, currentIndex, duration, index;
+    let title, playlistId, videoId, subtitle, currentIndex, duration, index, isPlaylist = false;
     const thumbnail = obj.thumbnails
 
     // if it is playlist
@@ -20,6 +20,7 @@ export default function AlbumList({ list, i, obj }) {
         subtitle = st
         currentIndex = i
         index = i + 1
+        isPlaylist = true
 
     } else if (list?.flexColumns) { // if it is a album
         const { text, navigationEndpoint } = list?.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text.runs[0]
@@ -36,6 +37,8 @@ export default function AlbumList({ list, i, obj }) {
         currentIndex = cI
         index = inx
         playlistId = navigationEndpoint.watchEndpoint.playlistId
+        isPlaylist = false
+
     } else return null
 
 
@@ -46,15 +49,17 @@ export default function AlbumList({ list, i, obj }) {
             isLoading: true
         }))
 
-        await PlaySong(currentIndex, videoId, thumbnail, true)
+        await PlaySong(currentIndex, videoId, thumbnail, playlistId)
 
-        const { playlist: cPlaylist } = await getPlaylistThunk({ videoId, playlistId })
+            const { playlist: cPlaylist } = await getQueue({ playlistId })
 
-        if (cPlaylist) {
-            dispatch(setPlayList({
-                playlist: cPlaylist
-            }))
-        }
+            console.log(cPlaylist[0])
+
+            if (cPlaylist) {
+                dispatch(setPlayList({
+                    playlist: cPlaylist,
+                }))
+            }
     }
 
     return (

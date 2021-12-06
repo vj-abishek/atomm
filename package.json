@@ -21,6 +21,7 @@
     "react-native": "0.66.0",
     "react-native-bottomsheet-reanimated": "^0.0.44",
     "react-native-elements": "^3.4.2",
+    "react-native-fast-image": "^8.5.11",
     "react-native-gesture-bottom-sheet": "^1.0.9",
     "react-native-image-colors": "^1.4.0",
     "react-native-interactable-reanimated": "^0.0.15",

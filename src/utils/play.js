@@ -1,8 +1,10 @@
 import TrackPlayer from 'react-native-track-player'
 import { store } from "../store/store"
 import ImageColors from 'react-native-image-colors'
-import { getSong, setPlayer, setVibrant, updatePlayer, updateplayerstatus } from '../store/features/playerSlice';
+import { getSong, setVibrant, updatePlayer, updateplayerstatus } from '../store/features/playerSlice';
 import theme from '../theme/theme';
+import { MMKV } from '../storage/index';
+
 
 const parseProxyRedir = (url) => {
   let new_url = url.replace('https://', '')
@@ -44,19 +46,25 @@ const fetchColors = async (artwork) => {
   })
 
   const { darkMuted } = result
+  const vibrant = {
+    primary: darkMuted === '#000000' ? theme.sy : darkMuted,
+    secondary: shadeColor(darkMuted, -30)
+  }
   store.dispatch(setVibrant({
-    vibrant: {
-      primary: darkMuted === '#000000' ? theme.sy : darkMuted,
-      secondary: shadeColor(darkMuted, -30)
-    }
+    vibrant
   }))
+
+  return vibrant
 }
 
-export const PlaySong = async (currentIndex = 0, videoId = null, thumbnail = null, currentThumbnail = false) => {
+export const PlaySong = async (currentIndex = 0, videoId = null, thumbnail = null, playID = null) => {
+
 
   store.dispatch(updatePlayer({
     isLoading: true
   }))
+
+  await TrackPlayer.reset();
 
   const state = store.getState().player
   const playlist = state.playlist
@@ -86,6 +94,10 @@ export const PlaySong = async (currentIndex = 0, videoId = null, thumbnail = nul
             i.audioChannels === 2 &&
             i.audioQuality.includes('AUDIO_QUALITY_MEDIUM')
           ) {
+            // i.url = parseProxyRedir(i.url)
+            return arr.push(i)
+          } else if (i.audioChannels === 1 &&
+            i.audioQuality.includes('AUDIO_QUALITY_MEDIUM')) {
             return arr.push(i)
           }
         }
@@ -106,7 +118,6 @@ export const PlaySong = async (currentIndex = 0, videoId = null, thumbnail = nul
           artwork = tb[tb.length - 1].url
         }
 
-        await TrackPlayer.reset();
 
         await TrackPlayer.add({
           url,
@@ -119,16 +130,28 @@ export const PlaySong = async (currentIndex = 0, videoId = null, thumbnail = nul
         await TrackPlayer.play()
 
         fetchColors(artwork)
-
-        store.dispatch(setPlayer({
+        const obj = {
           url,
           title,
           duration,
           artist,
-          thumbnail: artwork
-        }))
+          artwork
+        }
+
+        const currentsong = {
+          ...obj,
+          videoId: playListId ? playListId : null,
+          url: null,
+          playlistId: playID
+        }
+
+        await MMKV.setMap('currentsong', currentsong);
 
       }
+      store.dispatch(updatePlayer({
+        isLoading: false
+      }))
+    } else {
       store.dispatch(updatePlayer({
         isLoading: false
       }))
