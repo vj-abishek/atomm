@@ -2,7 +2,7 @@ import React from 'react'
 import { View, Text, Dimensions, StyleSheet, StatusBar } from 'react-native'
 import FastImage from 'react-native-fast-image'
 import Albums from '../../components/Artist/Albums';
-import Video from '../../components/Artist/Video'
+import LinearGradient from 'react-native-linear-gradient';
 import theme from '../../theme/theme';
 
 const { height } = Dimensions.get('window')
@@ -19,11 +19,12 @@ export default function Header({ data, index }) {
                         resizeMode: FastImage.resizeMode.contain,
                     }}
                     style={{
-                        height: '100%',
-                        width: '100%',
+                        flex: 1
                     }}
                 />
-                <View style={styles.container}>
+                <LinearGradient
+                    colors={['rgba(0,0,0,0.5)', theme.bg]}
+                    style={styles.container}>
                     <View style={{ paddingTop: STATUS_BAR_HEIGHT + 50 }}>
                         <View style={{ paddingHorizontal: 10 }}>
                             <Text style={{ color: theme.txtHeader }}>{data.header.strapline}</Text>
@@ -32,7 +33,7 @@ export default function Header({ data, index }) {
                         <Albums showTitle={false} width={150} data={data.data} index={index} />
 
                     </View>
-                </View>
+                </LinearGradient>
             </View>
         </View >
     )
@@ -41,9 +42,8 @@ export default function Header({ data, index }) {
 const styles = StyleSheet.create({
     container: {
         position: 'absolute',
-        backgroundColor: 'rgba(0,0,0,0.6)',
         width: '100%',
-        height: '100%',
+        height: '100%'
     }
 })
 

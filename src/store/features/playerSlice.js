@@ -34,6 +34,14 @@ const initialState = {
     isFocused: false,
   },
   playlistId: null,
+  downloadStatus: {
+    isDownloading: false,
+    downloaded: false
+  },
+  settings: {
+    'Audio Quality': 'AUDIO_QUALITY_LOW',
+    'Download Quality': 'AUDIO_QUALITY_LOW',
+  }
 }
 
 const url = `${REACT_APP_API_URL}api/`
@@ -147,12 +155,30 @@ export const counterSlice = createSlice({
     },
     setFocusSearch: (state, { payload }) => {
       state.focusSearch = payload.focusSearch
+    },
+    setIsDownloading: (state, { payload }) => {
+      state.downloadStatus = payload
+    },
+    setSettings: (state, { payload }) => {
+      state.settings = payload
     }
   }
 })
 
 // Action creators are generated for each case reducer function
-export const { add, updatePlayer, setPlayList, playNow, updateplayerstatus, setRandomId, setThumbnail, setVibrant, setPlayer, setFocusSearch } = counterSlice.actions
+export const { add,
+  updatePlayer,
+  setPlayList,
+  playNow,
+  updateplayerstatus,
+  setRandomId,
+  setThumbnail,
+  setVibrant,
+  setPlayer,
+  setFocusSearch,
+  setIsDownloading,
+  setSettings
+} = counterSlice.actions
 
 
 export default counterSlice.reducer

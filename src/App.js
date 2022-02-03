@@ -3,17 +3,26 @@ import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator, BottomTabBar } from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import MaterialIcons from 'react-native-vector-icons/MaterialCommunityIcons'
+import Mt from 'react-native-vector-icons/MaterialIcons'
 import Player from './player/index'
 import { useDispatch, useSelector } from 'react-redux';
-import { setFocusSearch } from './store/features/playerSlice'
+import { setFocusSearch, setSettings } from './store/features/playerSlice'
 import HomeScreenStack from './navigation/HomeScreenStack';
+import YourScreenStack from './navigation/YourSpace'
+import CreatePlaylist from './components/Playlist/Create'
 import theme from './theme/theme';
 import { StatusBar, View } from 'react-native';
 import TrackPlayer, { Capability } from 'react-native-track-player';
 import SearchScreenStack from './navigation/SearchScreenStack';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import PlayerUI from './navigation/PlayerUI';
+import Overlay from './navigation/Overlay'
 import PlayListUI from './components/Playlist/index'
+import AddToPlaylist from './navigation/AddToPlaylist'
+import 'react-native-gesture-handler';
+import Settings from './components/Helpers/Settings';
+import { MMKV } from './storage';
+
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator()
@@ -67,6 +76,7 @@ const TabNavigation = () => {
       <Tab.Screen listeners={{
         tabPress: handlePress
       }} name="Search" component={SearchScreenStack} />
+      <Tab.Screen name="More" component={YourScreenStack} />
     </Tab.Navigator>
   )
 }
@@ -97,6 +107,26 @@ const StackNavigation = () => {
           headerShown: true,
           headerTransparent: false
         }} component={PlayListUI} />
+        <Stack.Screen name="cp" component={CreatePlaylist}
+          options={{
+            headerShown: false,
+          }} />
+        <Stack.Screen name="options" component={Overlay}
+          options={{
+            headerShown: false,
+          }} />
+        <Stack.Screen name="Add to Playlist" component={AddToPlaylist}
+          options={{
+            headerTitle: 'Add to Playlist',
+            headerTintColor: theme.txt,
+            headerStyle: {
+              backgroundColor: theme.sy,
+            },
+            headerTitleAlign: 'center',
+            headerShown: true,
+            headerTransparent: false,
+          }}
+        />
       </Stack.Group>
     </Stack.Navigator>
   )
@@ -138,6 +168,14 @@ const App = () => {
     return () => TrackPlayer.destroy();
   }, []);
 
+  useEffect(() => {
+    const settings = MMKV.getMap('setttings')
+
+    if (settings) {
+      dispatch(setSettings(settings))
+    }
+  }, [])
+
   return (
     <View style={{ backgroundColor: theme.bg, flex: 1 }}>
       <StatusBar
@@ -167,6 +205,11 @@ const screenOptions = ({ route }) => ({
       const iconName = focused ? 'search' : 'search-outline';
       return <Ionicons name={iconName} size={size} color={color} />
     }
+
+    if (route.name === 'More') {
+      const iconName = 'more-horiz';
+      return <Mt name={iconName} size={size} color={color} />
+    }
   },
   tabBarActiveTintColor: theme.txt,
   tabBarInactiveTintColor: theme.gray,
@@ -178,7 +221,7 @@ const screenOptions = ({ route }) => ({
     paddingBottom: 5,
     backgroundColor: theme.sy,
     fontWeight: '700',
-    borderTopColor: theme.sy
+    borderTopColor: theme.sy,
   }
 })
 

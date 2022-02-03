@@ -14,7 +14,7 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons'
 import { useDispatch, useSelector } from 'react-redux'
 import { togglePlayback } from '../player'
 import theme from '../theme/theme'
-import { Previous, Next } from '../utils/play'
+import { Previous, Next, DownloadSong } from '../utils/play'
 import { MMKV } from '../storage/index'
 
 // second to HH:MM:SS and show hour only if > 1 hour
@@ -26,7 +26,7 @@ const secToTime = (sec) => {
 }
 
 function PlayerUI() {
-    const { bottomPlayerStatus, vibrant } = useSelector(state => state.player)
+    const { bottomPlayerStatus, vibrant, downloadStatus } = useSelector(state => state.player)
     const dispatch = useDispatch()
 
     const navigation = useNavigation()
@@ -36,6 +36,8 @@ function PlayerUI() {
     )
     const playbackState = usePlaybackState();
     const [localData, setLocalData] = useMMKVStorage('currentsong', MMKV, null)
+    const [offlineSongs,] = useMMKVStorage('offline', MMKV, [])
+    const [isoffline, setisOffline] = useState(false)
 
     const appStateChange = appState => setAppState(appState)
 
@@ -43,6 +45,24 @@ function PlayerUI() {
         const subscription = AppState.addEventListener('change', appStateChange)
         return () => subscription.remove()
     }, [])
+
+    useEffect(() => {
+        const isAvaliable = offlineSongs.some((i) => i.videoId === localData.videoId)
+        setisOffline(isAvaliable)
+    }, [offlineSongs])
+
+
+    const handleOptions = () => {
+        navigation.navigate('options', {
+            thumbnail: localData?.artwork,
+            title: localData?.title,
+            list: localData,
+            remove: false,
+            from: 'player'
+        })
+    }
+
+    // console.log('localData', localData)
 
     return (localData) ? (
         <>
@@ -60,13 +80,16 @@ function PlayerUI() {
                 <View style={{ maxWidth: 500, width: '85%', flex: 1, bottom: 0, position: 'absolute' }}>
                     <View>
                         {localData.artwork ? (
-                            <FastImage
-                                style={[Styles.imageStyle]}
-                                source={{
-                                    uri: localData.artwork,
-                                    priority: FastImage.priority.high,
-                                }}
-                            />
+                            <View style={{ borderRadius: 5, width: '100%', aspectRatio: 1 / 1, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }}>
+                                <FastImage
+                                    style={[Styles.imageStyle]}
+                                    source={{
+                                        uri: localData.artwork,
+                                        priority: FastImage.priority.high,
+                                    }}
+                                    resizeMode={FastImage.resizeMode.contain}
+                                />
+                            </View>
 
                         ) : (
                             <View style={{ width: '100%', elevation: 3, height: '100%', borderRadius: 8, marginLeft: 10, backgroundColor: theme.sy }}>
@@ -78,7 +101,7 @@ function PlayerUI() {
                         </View>
 
 
-                        <View style={{ flexDirection: 'row', width: '100%', marginTop: -15 }}>
+                        <View style={{ flexDirection: 'row', width: '100%' }}>
                             <View style={{ width: '100%' }}>
                                 <Slider
                                     style={Styles.progressContainer}
@@ -107,10 +130,10 @@ function PlayerUI() {
                         </View>
 
                         <View style={Styles.playerConatiner}>
-                            <View style={{ flexDirection: 'row', height: 70, justifyContent: 'center', alignItems: 'center', width: '94%' }}>
+                            <View style={{ flexDirection: 'row', height: 70, justifyContent: 'center', alignItems: 'center', width: '100%' }}>
                                 <TouchableOpacity onPress={() => Previous()}>
-                                    <View style={{ marginRight: 40 }}>
-                                        <MaterialIcon style={{ marginLeft: 20 }} name="skip-previous" color={theme.txt} size={35} />
+                                    <View style={{ marginRight: 30 }}>
+                                        <MaterialIcon name="skip-previous" color={theme.txt} size={35} />
                                     </View>
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={() => togglePlayback(playbackState, localData, dispatch)}>
@@ -127,8 +150,8 @@ function PlayerUI() {
                                     </View>
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={() => Next()}>
-                                    <View>
-                                        <MaterialIcon style={{ marginLeft: 40 }} name="skip-next" color={theme.txt} size={35} />
+                                    <View style={{ marginLeft: 30 }}>
+                                        <MaterialIcon name="skip-next" color={theme.txt} size={35} />
                                     </View>
                                 </TouchableOpacity>
                             </View>
@@ -143,6 +166,29 @@ function PlayerUI() {
                             onPress={() => navigation.navigate('Playlist')}
                         >
                             <MaterialIconCommunity name="playlist-music" size={25} color={theme.txtSy} />
+                        </TouchableOpacity>
+
+                        {isoffline ? (
+                            <TouchableOpacity style={{ padding: 10 }} >
+                                <Ionicons name="download-outline" size={25} color={theme.txtSy} />
+                            </TouchableOpacity>
+
+                        ) : (
+                            downloadStatus.isDownloading ? (
+                                <TouchableOpacity style={{ padding: 10 }}>
+                                    <MaterialIconCommunity name="timer-sand" size={22} color={theme.txtSy} />
+                                </TouchableOpacity>
+                            ) : (
+                                <TouchableOpacity style={{ padding: 10 }} onPress={DownloadSong}>
+                                    <Ionicons name="download-outline" size={25} color={theme.txtSy} />
+                                </TouchableOpacity>
+                            )
+                        )}
+
+                        <TouchableOpacity style={{ padding: 10 }}
+                            onPress={handleOptions}
+                        >
+                            <MaterialIcon name="more-vert" size={25} color={theme.txtSy} />
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -200,17 +246,16 @@ const Styles = StyleSheet.create({
     playerConatiner: {
         width: '100%',
         flex: 1,
-        padding: 20,
-        height: 70,
+        marginTop: 20,
+        marginBottom: -20,
+        height: 'auto',
         flexDirection: 'row',
     },
     header: {
-        width: '85%',
-        marginLeft: 30,
-        marginRight: 30,
+        width: '100%',
         marginTop: 50,
         marginBottom: 50,
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'space-around',
     }
 })

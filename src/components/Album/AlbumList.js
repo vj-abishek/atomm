@@ -1,12 +1,16 @@
 import React from 'react'
-import { View, Text, StyleSheet, TouchableNativeFeedback } from 'react-native'
+import { View, Text, StyleSheet, TouchableNativeFeedback, TouchableHighlight } from 'react-native'
 import { getPlaylistThunk, getQueue, setPlayList, updatePlayer } from '../../store/features/playerSlice'
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons'
 import theme from '../../theme/theme'
 import { useDispatch } from 'react-redux'
 import { PlaySong } from '../../utils/play'
+import { useNavigation } from '@react-navigation/native'
 
-export default function AlbumList({ list, i, obj }) {
+export default function AlbumList({ list, i, obj, albumList }) {
     const dispatch = useDispatch()
+    const navigation = useNavigation();
+
     let title, playlistId, videoId, subtitle, currentIndex, duration, index, isPlaylist = false;
     const thumbnail = obj.thumbnails
 
@@ -49,24 +53,46 @@ export default function AlbumList({ list, i, obj }) {
             isLoading: true
         }))
 
-        await PlaySong(currentIndex, videoId, thumbnail, playlistId)
+        if (list?.isOffline) {
+            await PlaySong(currentIndex, videoId, thumbnail, playlistId, list)
+        } else {
+            await PlaySong(currentIndex, videoId, thumbnail, playlistId)
+        }
 
-            const { playlist: cPlaylist } = await getQueue({ playlistId })
 
-            console.log(cPlaylist[0])
+        let cPlaylist = []
 
-            if (cPlaylist) {
-                dispatch(setPlayList({
-                    playlist: cPlaylist,
-                }))
-            }
+        if (obj.type === 'YourAlbum') {
+            cPlaylist = albumList
+        } else {
+            const { playlist } = await getQueue({ playlistId })
+            cPlaylist = playlist
+        }
+
+        // console.log(cPlaylist)
+
+        if (cPlaylist) {
+            dispatch(setPlayList({
+                playlist: cPlaylist,
+            }))
+        }
+    }
+
+
+    const handleOptions = () => {
+        navigation.navigate('options', {
+            thumbnail,
+            title,
+            list,
+            remove: obj.type === 'YourAlbum' ? true : false,
+        })
     }
 
     return (
         <TouchableNativeFeedback onPress={getNextList}>
             <View style={styles.container}>
                 <View style={{ flexDirection: 'row', flex: 2 }}>
-                    <Text style={styles.index}>{index}</Text>
+                    <Text style={styles.index}>{String(index).length === 1 ? `0${index}` : index}</Text>
                     <View style={{ flex: 2 }}>
                         <Text style={styles.itemText}>{title}</Text>
                         <Text numberOfLines={1} style={styles.subtitle}>
@@ -76,7 +102,15 @@ export default function AlbumList({ list, i, obj }) {
                         </Text>
                     </View>
                 </View>
-                {duration && (<Text style={styles.duration}>{duration}</Text>)}
+                {duration ?
+                    (<Text style={styles.duration}>{duration}</Text>)
+                    :
+                    (
+                        <TouchableHighlight onPress={handleOptions} style={styles.options}>
+                            <MaterialIcon name='more-vert' size={20} color={theme.txtSy} />
+                        </TouchableHighlight>
+                    )
+                }
             </View>
         </TouchableNativeFeedback>
     )
@@ -106,6 +140,7 @@ const styles = StyleSheet.create({
     },
     index: {
         padding: 8,
+        marginLeft: 9,
         fontSize: 16,
         marginRight: 13,
         width: 35,
@@ -113,6 +148,7 @@ const styles = StyleSheet.create({
     },
     duration: {
         color: theme.txtSy,
-    }
+    },
+    options: { padding: 5, borderRadius: 8, justifyContent: 'center', alignItems: 'center' }
 
 })

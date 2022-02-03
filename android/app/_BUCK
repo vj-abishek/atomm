@@ -35,12 +35,12 @@ android_library(
 
 android_build_config(
     name = "build_config",
-    package = "com.atomm.musictest2",
+    package = "com.atomm.music",
 )
 
 android_resource(
     name = "res",
-    package = "com.atomm.musictest2",
+    package = "com.atomm.music",
     res = "src/main/res",
 )
 

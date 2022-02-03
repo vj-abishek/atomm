@@ -11,14 +11,16 @@ export default function Singles({ data, index, title }) {
             <FlatList
                 data={data}
                 horizontal
-                renderItem={({ item }) => <VideoRenderer
-                    album={item}
-                    width={250}
-                    imageStyle={{
-                        borderRadius: 8,
-                        aspectRatio: 16 / 9,
-                    }}
-                />}
+                renderItem={({ item }) => (
+                    <VideoRenderer
+                        album={item}
+                        width={250}
+                        imageStyle={{
+                            borderRadius: 8,
+                            aspectRatio: 16 / 9,
+                        }}
+                    />
+                )}
                 showsHorizontalScrollIndicator={false}
             />
 

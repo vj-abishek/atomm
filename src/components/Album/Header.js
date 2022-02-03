@@ -1,6 +1,7 @@
 import React from 'react'
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import FastImage from 'react-native-fast-image'
+import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch, useSelector } from 'react-redux'
 import { getPlaylistThunk, getQueue, setPlayList, updatePlayer } from '../../store/features/playerSlice'
 import theme from '../../theme/theme'
@@ -53,16 +54,26 @@ export default function Header({ obj, title, albumList }) {
     }
     return (
         <View style={styles.headerContainer}>
-            <FastImage
-                source={{
-                    uri: obj.thumbnails,
-                }}
-                style={styles.imageStyle}
-            />
+            {obj.type === 'YourAlbum' ? (
+                <LinearGradient
+                    colors={[obj.color, theme.sy]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }} style={[styles.imageStyle, { justifyContent: 'center', alignItems: 'center' }]}>
+                    <Text style={{ fontSize: 40, color: theme.txt, textTransform: 'uppercase' }}>{title[0]}</Text>
+                </LinearGradient>
+            ) : (
+                <FastImage
+                    source={{
+                        uri: obj.thumbnails,
+                    }}
+                    style={styles.imageStyle}
+                />
+            )}
+
             <Text style={styles.heading}>{title}</Text>
-            <Text style={{ marginTop: 3, textAlign: 'center' }}>
+            <Text style={{ marginTop: 3, textAlign: 'center', color: theme.txtSy }}>
                 {obj.subtitle.map((st, i) => (
-                    <Text key={`FroM_album_Main_subtitle_T${i}`}>{st.text}</Text>
+                    <Text key={`FroM_album_Main_subtitle_T${i}`} style={{ color: theme.txtSy }}>{st.text}</Text>
                 ))}
             </Text>
             {albumList[0]?.musicResponsiveListItemRenderer && (
@@ -90,6 +101,7 @@ const styles = StyleSheet.create({
         fontSize: 25,
         textAlign: 'center',
         marginTop: 15,
+        fontWeight: 'bold',
         padding: 10
     },
     imageStyle: {

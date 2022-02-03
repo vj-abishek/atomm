@@ -72,6 +72,7 @@ const formatData = (content) => content.map((item) => {
             data: current?.contents?.map((content) => {
                 return {
                     title: content?.musicTwoRowItemRenderer?.title.runs[0].text,
+                    aspectRatio: content?.musicTwoRowItemRenderer?.aspectRatio,
                     subtitle: content?.musicTwoRowItemRenderer?.subtitle.runs,
                     type: content?.musicTwoRowItemRenderer?.navigationEndpoint?.browseEndpoint?.browseEndpointContextSupportedConfigs?.browseEndpointContextMusicConfig?.pageType,
                     thumbnail: content?.musicTwoRowItemRenderer?.thumbnailRenderer.musicThumbnailRenderer?.thumbnail?.thumbnails[1]?.url,

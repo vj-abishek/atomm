@@ -139,12 +139,14 @@ export default function Feed({ searchData, navigation }) {
                         const cicleImg = type === 'MUSIC_PAGE_TYPE_ARTIST' ? { borderRadius: 100 } : {}
 
                         let thumbnail = c?.musicResponsiveListItemRenderer?.thumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails[0].url;
+
                         return (
                             <TouchableNativeFeedback key={`serchResultmE${i}`} onPress={() => handlePress(songTitle, c, subtitle, thumbnail)}>
                                 <View style={{ flexDirection: 'row' }}>
                                     <View style={{ padding: 10 }}>
                                         <FastImage
                                             style={[styles.imageStyle, cicleImg]}
+                                            resizeMode={FastImage.resizeMode.contain}
                                             source={{
                                                 uri: thumbnail.replace('w60', 'w226').replace('h60', 'h226')
                                             }}

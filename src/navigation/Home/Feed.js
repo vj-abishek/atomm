@@ -67,6 +67,7 @@ export default function Feed({ data }) {
             <View style={{ flex: 1 }}>
                 {currentData && <SectionList
                     ref={ref}
+                    scrollEventThrottle={16}
                     stickySectionHeadersEnabled={false}
                     showsVerticalScrollIndicator={false}
                     sections={currentData}

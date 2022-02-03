@@ -88,7 +88,7 @@ export default function index() {
                             source={{
                                 uri: localData?.artwork?.replace('h544', 'h226').replace('w544', 'w226'),
                             }}
-                            resizeMode="cover"
+                            resizeMode="contain"
                             PlaceholderContent={<ActivityIndicator size="small" color={theme.txt} />}
                         />
                     ) : (

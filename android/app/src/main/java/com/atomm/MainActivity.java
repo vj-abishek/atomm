@@ -1,4 +1,4 @@
-package com.atomm.musictest2;
+package com.atomm.music;
 
 import com.facebook.react.ReactActivity;
 

@@ -2,6 +2,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react'
 import { StatusBar } from 'react-native'
 import theme from '../theme/theme';
+import Like from '../components/Helpers/Like'
 import AlbumScreen from './AlbumScreen';
 import ArtistScreen from './ArtistScreen';
 import SearchScreen from './SearchScreen';
@@ -28,19 +29,28 @@ export default function SearchScreenStack() {
                     headerStyle: {
                         backgroundColor: theme.sy,
                     },
-                    headerTintColor: theme.txt
+                    headerTintColor: theme.txt,
+                    headerRight: () => <Like route={route} />
                 })}
                     name="SearchAlbum" component={AlbumScreen} />
 
                 <Stack.Screen options={{
-                    headerShown: true,
+                    headerShown: false,
                     headerTransparent: true,
                     headerShadowVisible: false,
                     headerTintColor: theme.txt,
                     title: '',
-                    headerBlurEffect: true
                 }}
                     name="Artist" component={ArtistScreen} />
+
+                <Stack.Screen options={({ route }) => ({
+                    title: route.params.title,
+                    headerStyle: {
+                        backgroundColor: theme.sy,
+                    },
+                    headerTintColor: theme.txt
+                })}
+                    name="YourAlbum" component={AlbumScreen} />
 
             </Stack.Navigator>
         </>

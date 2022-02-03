@@ -1,17 +1,27 @@
 import React, { useState } from 'react'
 import { View, Text, StyleSheet, ActivityIndicator, FlatList, TouchableNativeFeedback } from 'react-native'
-import { Image } from 'react-native-elements'
 import { useSelector } from 'react-redux'
 import { PlaySong } from '../../utils/play'
 import theme from '../../theme/theme'
 
+// find if a element is array
+const isArray = (obj) => {
+    return Object.prototype.toString.call(obj) === '[object Array]'
+}
 
 const Playlist = ({ item, index, playerStatus, vibrant, bottomPlayerStatus }) => {
     const [cIndex, setcIndex] = useState(null)
 
     const handlePress = async () => {
         setcIndex(index)
-        await PlaySong(index, item.videoId, item.thumbnail)
+
+        if (item?.isOffline) {
+            await PlaySong(index, item.videoId, item.thumbnail, null, item)
+        } else {
+            await PlaySong(index, item.videoId, item.thumbnail)
+        }
+
+        setcIndex(null)
     }
 
     return (
@@ -19,11 +29,7 @@ const Playlist = ({ item, index, playerStatus, vibrant, bottomPlayerStatus }) =>
             <View style={[styles.item, playerStatus.cpIndex === index ? { backgroundColor: theme.sy } : {}]}>
                 <View style={{ flexDirection: 'row', flex: 2, alignItems: 'center' }}>
                     <View>
-                        <Image
-                            source={{ uri: null }}
-                            resizeMode="cover"
-                            PlaceholderContent={<ActivityIndicator size="small" color={theme.txt} />}
-                            style={styles.image} />
+                        <View style={styles.image} />
                         {cIndex === index && bottomPlayerStatus.isLoading ? (
                             <View style={[styles.image, styles.position]}>
                                 <ActivityIndicator size="small" color={theme.txt} />
@@ -33,7 +39,13 @@ const Playlist = ({ item, index, playerStatus, vibrant, bottomPlayerStatus }) =>
 
                     <View style={{ marginLeft: 15, flex: 1, marginRight: 10 }}>
                         <Text numberOfLines={2} style={styles.text}>{item.title}</Text>
-                        <Text style={styles.subtitle} numberOfLines={2}>{item.artistInfo.artist}</Text>
+                        {item?.artist && (
+                            <Text style={styles.subtitle} numberOfLines={2}>{item?.artist}</Text>
+                        )}
+                        {isArray(item?.artistInfo?.artist) && (<Text style={styles.subtitle} numberOfLines={2}>{item?.artistInfo?.artist[0]?.text}</Text>)}
+                        {item?.artistInfo?.artist && (
+                            <Text style={styles.subtitle} numberOfLines={2}>{item?.artistInfo?.artist}</Text>
+                        )}
                     </View>
                 </View>
                 <View>
@@ -84,7 +96,7 @@ const styles = StyleSheet.create({
         color: theme.txtSy,
     },
     image: {
-        width: 50,
+        width: 35,
         height: 50,
         borderRadius: 8
     },

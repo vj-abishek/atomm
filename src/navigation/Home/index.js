@@ -36,7 +36,7 @@ export default function index() {
     return (
         <View style={styles.container}>
             {homeFeedData ? (
-                <Feed data={homeFeedData}/>
+                <Feed data={homeFeedData} />
             ) : (
                 clicked ? (
                     <View style={styles.loading}>

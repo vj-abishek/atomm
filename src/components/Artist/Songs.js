@@ -1,7 +1,9 @@
+import { useNavigation } from '@react-navigation/native'
 import React from 'react'
-import { View, Text, StyleSheet, TouchableNativeFeedback, TouchableOpacity } from 'react-native'
+import { View, Text, StyleSheet, TouchableNativeFeedback, TouchableOpacity, TouchableHighlight } from 'react-native'
 import FastImage from 'react-native-fast-image'
 import Ionicons from 'react-native-vector-icons/Ionicons'
+import MaterialIcon from 'react-native-vector-icons/MaterialIcons'
 import { useDispatch, useSelector } from 'react-redux'
 import { getPlaylistThunk, getQueue, setPlayList, updatePlayer } from '../../store/features/playerSlice'
 import theme from '../../theme/theme'
@@ -10,6 +12,7 @@ import { PlaySong } from '../../utils/play'
 export default function Songs({ data }) {
 
     const dispatch = useDispatch()
+    const navigation = useNavigation()
     const { playlist } = useSelector(state => state.player)
 
     const handlePress = async (params, i) => {
@@ -79,9 +82,18 @@ export default function Songs({ data }) {
                 dispatch(setPlayList({
                     playlist: shuffled,
                 }))
-                await PlaySong(0, shuffled[0].videoId, null , playlistId)
+                await PlaySong(0, shuffled[0].videoId, null, playlistId)
             }
         }
+    }
+
+    const handleOptions = (params) => {
+        navigation.navigate('options', {
+            thumbnail: params?.thumbnail.replace('w120', 'w544').replace('h120', 'h544'),
+            title: params.title,
+            list: params,
+            remove: false,
+        })
     }
 
     return (
@@ -108,6 +120,9 @@ export default function Songs({ data }) {
                                     })}
                                 </Text>
                             </View>
+                            <TouchableHighlight onPress={() => handleOptions(song)} style={style.options}>
+                                <MaterialIcon name='more-vert' size={20} color={theme.txtSy} />
+                            </TouchableHighlight>
                         </View>
                     </TouchableNativeFeedback>
                 )
@@ -149,5 +164,6 @@ const style = StyleSheet.create({
         position: 'absolute',
         top: -30,
         right: 20
-    }
+    },
+    options: { padding: 5, borderRadius: 8, justifyContent: 'center', alignItems: 'center' }
 })

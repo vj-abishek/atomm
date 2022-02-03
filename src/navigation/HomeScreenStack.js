@@ -5,10 +5,12 @@ import Home from './Home/index';
 import { StatusBar } from 'react-native';
 import theme from '../theme/theme';
 import ArtistScreen from './ArtistScreen';
+import Like from '../components/Helpers/Like';
 
 const Stack = createNativeStackNavigator();
 
 export default function HomeScreenStack() {
+
     return (
         <>
             <StatusBar
@@ -19,7 +21,7 @@ export default function HomeScreenStack() {
             <Stack.Navigator>
                 <Stack.Screen options={{
                     headerShown: false,
-                    headerTransparent: true
+                    headerTransparent: true,
                 }}
                     name="MainHome" component={Home} />
 
@@ -28,7 +30,8 @@ export default function HomeScreenStack() {
                     headerStyle: {
                         backgroundColor: theme.sy,
                     },
-                    headerTintColor: theme.txt
+                    headerTintColor: theme.txt,
+                    headerRight: () => <Like route={route} />
                 })}
                     name="HomeAlbum" component={AlbumScreen} />
 
@@ -40,6 +43,15 @@ export default function HomeScreenStack() {
                 }}
                     name="Artist"
                     component={ArtistScreen} />
+
+                <Stack.Screen options={({ route }) => ({
+                    title: route.params.title,
+                    headerStyle: {
+                        backgroundColor: theme.sy,
+                    },
+                    headerTintColor: theme.txt
+                })}
+                    name="YourAlbum" component={AlbumScreen} />
 
             </Stack.Navigator>
         </>

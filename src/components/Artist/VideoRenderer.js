@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import FastImage from 'react-native-fast-image'
 import { useDispatch } from 'react-redux'
 import theme from '../../theme/theme'
@@ -27,7 +27,12 @@ export default function VideoRenderer({ album, imageStyle, width }) {
 
     const dispatch = useDispatch()
     const navigation = useNavigation()
+    const [isVideo, setIsVideo] = useState(false)
     const { name } = useRoute();
+
+    useEffect(() => {
+        setIsVideo(album?.aspectRatio && album?.aspectRatio?.includes('16'))
+    }, [])
 
     const handlePress = async (params) => {
         const videoId = params?.watchEndpoint?.videoId
@@ -115,8 +120,8 @@ export default function VideoRenderer({ album, imageStyle, width }) {
 
     return album && album?.subtitle?.length ? (
         <TouchableOpacity onPress={() => handlePress(album)}>
-            <View style={[styles.item, { width }]}>
-                <FastImage source={{ uri: album?.thumbnail }} style={imageStyle} />
+            <View style={[styles.item, isVideo ? { width: 250, marginRight: 30 } : { width }]}>
+                <FastImage source={{ uri: album?.thumbnail }} style={[imageStyle, isVideo ? { aspectRatio: 16 / 9 } : {}]} />
                 <Text numberOfLines={2} style={styles.itemText}>{album?.title}</Text>
                 <Text numberOfLines={1} style={styles?.subtitle}>
                     {album?.subtitle?.map((st, i) => (

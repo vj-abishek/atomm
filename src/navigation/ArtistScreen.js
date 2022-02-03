@@ -1,24 +1,45 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { SectionList, StatusBar } from 'react-native';
-import { View, StyleSheet, ActivityIndicator, Animated } from 'react-native'
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, SectionList, StatusBar, StyleSheet, TouchableHighlight, View } from 'react-native';
+import Animated, { Extrapolate, interpolate, interpolateColor, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import { getArtistDetails } from '../api/artist';
+import About from '../components/Artist/About';
 import Albums from '../components/Artist/Albums';
 import Header from '../components/Artist/Header';
 import Songs from '../components/Artist/Songs';
-import Video from '../components/Artist/Video'
-import About from '../components/Artist/About'
-import theme from '../theme/theme'
+import Video from '../components/Artist/Video';
+import theme from '../theme/theme';
+
+const AnimatedSectionList = Animated.createAnimatedComponent(SectionList);
+const STATUS_BAR_HEIGHT = StatusBar.currentHeight || 24;
 
 export default function ArtistScreen({ route, navigation }) {
     const { browseId } = route.params;
     const [sectionData, setSectionData] = useState(null);
 
-    const yOffset = useRef(new Animated.Value(0)).current;
-    const headerOpacity = yOffset.interpolate({
-        inputRange: [0, 200],
-        outputRange: [0, 1],
-        extrapolate: "clamp",
-    });
+    const yOffset = useSharedValue(0);
+
+
+    const animatedOpacity = useAnimatedStyle(() => {
+        const headerOpacity = interpolate(yOffset.value,
+            [0, 100, 250],
+            [0, 0, 1],
+            { extrapolateRight: Extrapolate.CLAMP, extrapolateLeft: Extrapolate.CLAMP }
+        );
+
+        return {
+            opacity: headerOpacity,
+        }
+    })
+
+    const animatedBackground = useAnimatedStyle(() => {
+        const headerBackground = interpolateColor(yOffset.value, [0, 150], ['transparent', theme.bg]);
+
+        return {
+            backgroundColor: headerBackground,
+        }
+    })
+
 
     useEffect(() => {
         const getArtist = async () => {
@@ -28,46 +49,30 @@ export default function ArtistScreen({ route, navigation }) {
         getArtist();
     }, [browseId])
 
-    useEffect(() => {
-        navigation.setOptions({
-            headerStyle: {
-                opacity: headerOpacity,
-            },
-            headerBackground: () => (
-                <Animated.View
-                    style={{
-                        backgroundColor: "white",
-                        ...StyleSheet.absoluteFillObject,
-                        opacity: headerOpacity,
-                    }}
-                />
-            ),
-            headerTransparent: true,
-        });
-        console.log(headerOpacity)
-    }, [headerOpacity, navigation]);
+    const scrollHander = useAnimatedScrollHandler((e) => {
+        yOffset.value = e.contentOffset.y
+    });
 
     return sectionData ? (
         <>
             <StatusBar
                 translucent
-                backgroundColor="rgba(0,0,0,0.4)"
+                backgroundColor="rgba(12,15,18,0.98)"
                 barStyle="light-content"
             />
+
             <View style={styles.container}>
-                <Animated.SectionList
-                    onScroll={Animated.event(
-                        [
-                            {
-                                nativeEvent: {
-                                    contentOffset: {
-                                        y: yOffset,
-                                    },
-                                },
-                            },
-                        ],
-                        { useNativeDriver: true }
+                <Animated.View style={[styles.header, { top: STATUS_BAR_HEIGHT }, animatedBackground]}>
+                    <TouchableHighlight onPress={() => navigation.goBack()}>
+                        <AntDesign size={25} style={{ paddingLeft: 15, color: theme.txt }} name='arrowleft'></AntDesign>
+                    </TouchableHighlight>
+                    {sectionData[0].data[0].title && (
+                        <Animated.Text numberOfLines={1} style={[{ color: theme.txt, fontWeight: 'bold', fontSize: 20, paddingLeft: 20, paddingRight: 10 }, animatedOpacity]}>{sectionData[0].data[0].title}</Animated.Text>
                     )}
+                </Animated.View>
+                <AnimatedSectionList
+                    onScroll={scrollHander}
+                    scrollEventThrottle={16}
                     stickySectionHeadersEnabled={false}
                     sections={sectionData}
                     showsVerticalScrollIndicator={false}
@@ -117,6 +122,16 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: theme.bg
+    },
+    header: {
+        flex: 1,
+        zIndex: 4,
+        height: 60,
+        ...StyleSheet.absoluteFillObject,
+        left: 0,
+        flexDirection: 'row',
+        alignItems: 'center',
+        // elevation: 4,
     }
 })
 
