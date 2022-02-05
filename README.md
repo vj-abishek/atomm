@@ -19,6 +19,9 @@ Alternate frontend for YoutubeMusic App.
 - [x] Like your songs
 - [x] Download songs 
 
+### Download
+- [Direct download](https://github.com/vj-abishek/atomm/releases/download/v1.0/app-release.apk)
+- [Release](https://github.com/vj-abishek/atomm/releases/tag/v1.0)
 
 ### inspirations
 - [BeatBump](https://github.com/snuffyDev/Beatbump) - a web based music player
