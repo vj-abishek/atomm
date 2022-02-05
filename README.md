@@ -5,9 +5,9 @@
 </p>
 
 
-# Atomm, the music app
+# Atomm 🎸 the music app.
 
-Alternate frotend for YoutubeMusic App. 
+Alternate frontend for YoutubeMusic App. 
 
 
 ### Features
