@@ -7,6 +7,9 @@
 
 # Atomm, the music app
 
+Alternate frotend for YoutubeMusic App. 
+
+
 ### Features
 
 - [x] Play songs, video songs from any artist
@@ -18,5 +21,5 @@
 
 
 ### inspirations
-- [BeatBump](https://github.com/vj-abishek/Beatbump)
+- [BeatBump](https://github.com/snuffyDev/Beatbump) - a web based music player
 - [Invidious](https://github.com/iv-org/invidious) - a privacy focused alternative YouTube front end.
