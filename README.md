@@ -7,7 +7,7 @@
 
 # Atomm 🎸 the music app.
 
-Alternate frontend for YoutubeMusic App. 
+Privacy focused alternate frontend for YoutubeMusic App. 
 
 
 ### Features
