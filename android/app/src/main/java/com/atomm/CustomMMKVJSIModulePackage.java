@@ -1,4 +1,4 @@
-package com.atomm.music;
+package com.atomm.open;
 
 import com.facebook.react.bridge.JSIModuleSpec;
 import com.facebook.react.bridge.JavaScriptContextHolder;
