@@ -21,7 +21,7 @@ Privacy focused alternate frontend for YoutubeMusic App.
 
 ### Download
 - [Direct download](https://github.com/vj-abishek/atomm/releases/download/v1.0/app-release.apk)
-- [Release](https://github.com/vj-abishek/atomm/releases/tag/v1.0)
+- [Release](https://github.com/vj-abishek/atomm/releases)
 
 ### inspirations
 - [BeatBump](https://github.com/snuffyDev/Beatbump) - a web based music player
